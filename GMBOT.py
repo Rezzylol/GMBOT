@@ -12,9 +12,6 @@ bot = telebot.TeleBot(API_KEY)
 def send_help_message(msg):
     bot.reply_to(msg, "omg haiiiii :3c")
 
-#automatic responses
-
-
 import datetime
 
 
@@ -62,9 +59,7 @@ def display_logins(message):
     bot.reply_to(message, f'Login Log:\n{log_contents}')
 
 
-
 #old auto responses
-
 
 @bot.message_handler(func=lambda msg: msg.text == "good morning")
 def send_multi_message(msg):
