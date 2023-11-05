@@ -2,7 +2,7 @@ import telebot
 from telebot import types
 from constants import API_KEY
 
-bot = telebot.TeleBot(API_KEY, parse_mode=None)
+bot = telebot.TeleBot(API_KEY)
 
 @bot.message_handler(commands=["start"])
 def send_help_message(msg):
