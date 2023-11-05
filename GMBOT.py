@@ -4,7 +4,6 @@ import os
 import csv
 
 API_KEY = os.getenv('API_KEY')
-print(API_KEY)
 bot = telebot.TeleBot(API_KEY)
 
 checkin_data_path = '/data/checkin_data.csv'
