@@ -21,6 +21,12 @@ bot_inception_date = datetime.date.today()
 # log file where login timestamps and counts will be stored
 log_file = 'login_log.txt'
 
+#creates log file
+
+if not os.path.exists(log_file):
+    with open(log_file, "w") as f:
+        pass
+
 # Define a function to log the login
 def log_login(user_id):
     today = datetime.date.today()
