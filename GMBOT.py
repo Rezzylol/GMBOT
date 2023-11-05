@@ -1,8 +1,8 @@
 import telebot
-from telebot import types
 import os
 import datetime
 
+API_KEY = os.getenv('API_KEY')
 bot = telebot.TeleBot(API_KEY)
 log_file = 'login_log.txt'
 bot_inception_date = datetime.date.today()
