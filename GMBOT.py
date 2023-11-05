@@ -13,17 +13,25 @@ if not os.path.exists(log_file):
 
 def log_login(user_id):
     today = datetime.date.today()
+    updated_logins = []
+
     with open(log_file, 'r') as f:
         lines = f.readlines()
         for line in lines:
             date_str, uid, logins = line.strip().split(':')
             log_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
             if int(uid) == user_id and log_date == today:
-                return int(logins)
-    
-    with open(log_file, 'a') as f:
-        f.write(f'{today}: {user_id}: 1\n')
-    return 1
+                logins = str(int(logins) + 1)
+            updated_logins.append(f'{date_str}: {uid}: {logins}\n')
+
+        if not any(line.startswith(f'{today}: {user_id}:') for line in updated_logins):
+            updated_logins.append(f'{today}: {user_id}: 1\n')
+
+    with open(log_file, 'w') as f:
+        f.writelines(updated_logins)
+
+    # Return the updated login count
+    return int(logins)
 
 def days_since_inception():
     current_date = datetime.date.today()
