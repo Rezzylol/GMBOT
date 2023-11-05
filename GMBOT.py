@@ -33,6 +33,21 @@ def log_login(user_id):
     # Return the updated login count
     return int(logins)
 
+def get_leaderboard():
+    user_logins = {}
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            _, user_id, logins = line.strip().split(':')
+            user_logins[user_id] = user_logins.get(user_id, 0) + int(logins)
+    
+    sorted_users = sorted(user_logins.items(), key=itemgetter(1), reverse=True)
+    leaderboard = []
+    for user_id, logins in sorted_users:
+        leaderboard.append(f'User {user_id}: {logins} logins')
+    
+    return leaderboard
+
 def days_since_inception():
     current_date = datetime.date.today()
     delta = current_date - bot_inception_date
@@ -52,8 +67,11 @@ def handle_messages(message):
         else:
             bot.reply_to(message, f"Good morning again, {message.from_user.first_name}! Love the enthusiasm, but you've already checked in today.")
     elif message.text.lower() == '/logins':
-        with open(log_file, 'r') as f:
-            log_contents = f.read()
-        bot.reply_to(message, f'Login Log:\n{log_contents}')
+        leaderboard = get_leaderboard()
+        if leaderboard:
+            response = '\n'.join(leaderboard)
+        else:
+            response = 'No login data available.'
+        bot.reply_to(message, response)
 
 bot.polling()
