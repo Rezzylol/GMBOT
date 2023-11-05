@@ -6,7 +6,7 @@ import csv
 API_KEY = os.getenv('API_KEY')
 bot = telebot.TeleBot(API_KEY)
 
-checkin_data_path = '/app/checkin_data.csv'
+checkin_data_path = '/data/checkin_data.csv'
 
 if not os.path.exists(checkin_data_path):
     with open(checkin_data_path, 'w', newline='') as csvfile:
