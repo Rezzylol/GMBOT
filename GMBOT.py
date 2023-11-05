@@ -39,7 +39,7 @@ def handle_messages(message):
 
     if message.text.lower() == '/start':
         bot.reply_to(message, "omg haiiiii :3c")
-    elif message.text.lower() in ['/goodmorning', 'good morning', 'gm']:
+    elif message.text.lower() in ['/goodmorning', 'good morning', 'gm', 'good morning beverage', 'gm beverage']:
         bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
     elif message.text.lower() == '/logins':
         with open(log_file, 'r') as f:
