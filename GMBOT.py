@@ -55,7 +55,7 @@ def start(message):
     user_id = message.from_user.id
     logins = log_login(user_id)
     days_since = days_since_inception()
-    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since}.")
+    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
 
 # Check logins
 @bot.message_handler(commands=['logins'])
