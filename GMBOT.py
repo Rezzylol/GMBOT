@@ -68,24 +68,43 @@ def display_logins(message):
 #old auto responses
 
 @bot.message_handler(func=lambda msg: msg.text == "good morning")
-def send_multi_message(msg):
-    bot.reply_to(msg, f"Good morning! dont forget to check in with /goodmorning")
+def start(message):
+    user_id = message.from_user.id
+    logins = log_login(user_id)
+    days_since = days_since_inception()
+    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
+
 
 @bot.message_handler(func=lambda msg: msg.text == "gm")
-def send_multi_message(msg):
-    bot.reply_to(msg, f"Good morning! dont forget to check in with /goodmorning")
+def start(message):
+    user_id = message.from_user.id
+    logins = log_login(user_id)
+    days_since = days_since_inception()
+    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
+
 
 @bot.message_handler(func=lambda msg: msg.text == "Good Morning")
-def send_multi_message(msg):
-    bot.reply_to(msg, f"Good morning! dont forget to check in with /goodmorning")
+def start(message):
+    user_id = message.from_user.id
+    logins = log_login(user_id)
+    days_since = days_since_inception()
+    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
+
 
 @bot.message_handler(func=lambda msg: msg.text == "Good morning")
-def send_multi_message(msg):
-    bot.reply_to(msg, f"Good morning! dont forget to check in with /goodmorning")
+def start(message):
+    user_id = message.from_user.id
+    logins = log_login(user_id)
+    days_since = days_since_inception()
+    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
 
 @bot.message_handler(func=lambda msg: msg.text == "GM")
-def send_multi_message(msg):
-    bot.reply_to(msg, f"Good morning! dont forget to check in with /goodmorning")
+def start(message):
+    user_id = message.from_user.id
+    logins = log_login(user_id)
+    days_since = days_since_inception()
+    bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1}.")
+
 
 
 bot.polling()
