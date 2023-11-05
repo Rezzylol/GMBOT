@@ -34,6 +34,12 @@ def send_help_message(msg):
     print(msg)
     bot.reply_to(msg, f"Good Morning! {msg.from_user.first_name} youve checked in 0/0")
 
+@bot.message_handler(func=lambda msg: msg.text == "GM")
+def send_help_message(msg):
+    print(msg)
+    bot.reply_to(msg, f"Good Morning! {msg.from_user.first_name} youve checked in 0/0")
+
+
 bot.polling()
 
 
