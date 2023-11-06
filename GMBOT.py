@@ -7,13 +7,19 @@ from collections import defaultdict
 from datetime import datetime
 from telebot import TeleBot, types
 
+VERSION = "0.0.1-alpha0 build 0"
 API_KEY = os.getenv('API_KEY')
 CONTROL_CHAT_ID = '-4070279760'
 PAGE_SIZE = 10
 CHECK_INS_FILE = '/data/check_ins.csv'
+QUOTES_FILE = '/data/quotes.txt'
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 
 pagination_indexes = defaultdict(lambda: 0)
+
+with open(QUOTES_FILE, 'r', encoding='utf-8') as file:
+    quotes = file.readlines()
+    quotes = [quote.strip() for quote in quotes if quote.strip() != '']
 
 def get_tz_now():
     return datetime.now(TIME_ZONE).isoformat()
@@ -174,6 +180,27 @@ def leaderboard(message):
     totals_message = "\n".join([f"{idx + 1}. {username} - {data['total']}" for idx, (username, data) in enumerate(top_totals)])
     reply = f"🏆 Streaks:\n{streaks_message}\n\n🏆 Check-ins:\n{totals_message}"
     bot.reply_to(message, reply)
+
+@bot.message_handler(commands=['easteregg'])
+def leaderboard(message):
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
+    if message.from_user.is_premium:
+        reply = random.choice(quotes)
+    else:
+        reply = "I'm sorry, this command is only available to Telegram Premium users."
+    bot.reply_to(message, reply)
+
+@bot.message_handler(commands=['about'])
+def leaderboard(message):
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
+    reply = (
+        f"GMBOT {VERSION}\n"
+        f"\n"
+        f"Created by 🦊🔥 Rezzy & 🐺🐲 Kei\n"
+        f"\n"
+        f"Best viewed in Netscape Navigator, with a screen resolution of 800x600."
+    )
+    bot.reply_to(message, reply, parse_mode='HTML')
 
 @bot.message_handler(func=lambda message: message.from_user.username == "majeflyer")
 def rezzy(message):
