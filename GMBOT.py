@@ -1,78 +1,71 @@
 import telebot
-import os
 import datetime
+import os
+import csv
+
+print(f"Bot started at: {datetime.datetime.now()}")
 
 API_KEY = os.getenv('API_KEY')
 bot = telebot.TeleBot(API_KEY)
-log_file = 'login_log.txt'
-bot_inception_date = datetime.date.today()
 
-if not os.path.exists(log_file):
-    with open(log_file, "w"):
-        pass
+user_data = {}
+checkin_data_path = '/data/checkin_data.csv'
+if os.path.exists(checkin_data_path):
+    with open(checkin_data_path, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            user_id = int(row['user_id'])
+            date = row['date']
+            checkin_count = int(row['checkin_count'])
+            if user_id not in user_data:
+                user_data[user_id] = {'username': row['username'], 'streak': 0, 'total_checkins': 0, 'last_checkin_date': None, 'attempt_count': 0}
+            user_data[user_id]['total_checkins'] += checkin_count
+            if user_data[user_id]['last_checkin_date'] == date:
+                user_data[user_id]['streak'] += 1
+            else:
+                user_data[user_id]['streak'] = 1
+            user_data[user_id]['last_checkin_date'] = date
+            user_data[user_id]['attempt_count'] = 0
 
-def log_login(user_id):
-    today = datetime.date.today()
-    updated_logins = []
+@bot.message_handler(commands=['start'])
+def handle_start(message):
+    print(f"{datetime.datetime.now()} {message.from_user.username} /start")
 
-    with open(log_file, 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            date_str, uid, logins = line.strip().split(':')
-            log_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
-            if int(uid) == user_id and log_date == today:
-                logins = str(int(logins) + 1)
-            updated_logins.append(f'{date_str}: {uid}: {logins}\n')
+    bot.send_message(message.chat.id, "omg haiiiii :3c")
 
-        if not any(line.startswith(f'{today}: {user_id}:') for line in updated_logins):
-            updated_logins.append(f'{today}: {user_id}: 1\n')
-
-    with open(log_file, 'w') as f:
-        f.writelines(updated_logins)
-
-    # Return the updated login count
-    return int(logins)
-
-def get_leaderboard():
-    user_logins = {}
-    with open(log_file, 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            _, user_id, logins = line.strip().split(':')
-            user_logins[user_id] = user_logins.get(user_id, 0) + int(logins)
-    
-    sorted_users = sorted(user_logins.items(), key=itemgetter(1), reverse=True)
-    leaderboard = []
-    for user_id, logins in sorted_users:
-        leaderboard.append(f'User {user_id}: {logins} logins')
-    
-    return leaderboard
-
-def days_since_inception():
-    current_date = datetime.date.today()
-    delta = current_date - bot_inception_date
-    return delta.days
-
-@bot.message_handler(commands=['start', 'goodmorning', 'logins'])
-def handle_messages(message):
+@bot.message_handler(func=lambda message: message.text.lower() in ['good morning', 'gm', 'good morning beverage', 'gm beverage'])
+def handle_checkin(message):
+    print(f"{datetime.datetime.now()} {message.from_user.username} gm")
     user_id = message.from_user.id
-    logins = log_login(user_id)
-    days_since = days_since_inception()
-
-    if message.text.lower() == '/start':
-        bot.reply_to(message, "omg haiiiii :3c")
-    elif message.text.lower() in ['/goodmorning', 'good morning', 'gm', 'good morning beverage', 'gm beverage']:
-           if logins == 1:
-            bot.reply_to(message, f"Good Morning, {message.from_user.first_name}! You've checked in {logins}/{days_since + 1} times today.")
-           else:
-            bot.reply_to(message, f"Good morning again, {message.from_user.first_name}! Love the enthusiasm, but you've already checked in {logins} times today.")
-            
-    elif message.text.lower() == '/logins':
-        leaderboard = get_leaderboard()
-        if leaderboard:
-            response = '\n'.join(leaderboard)
+    username = message.from_user.username
+    today = datetime.date.today().strftime('%Y-%m-%d')
         else:
-            response = 'No login data available.'
-        bot.reply_to(message, response)
+            user_data[user_id]['streak'] = 1
+            user_data[user_id]['attempt_count'] = 1
+        user_data[user_id]['last_checkin_date'] = today
 
-bot.polling()
+        with open(checkin_data_path, 'a', newline='') as csvfile:
+            fieldnames = ['user_id', 'username', 'date', 'checkin_count']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writerow({'user_id': user_id, 'username': username, 'date': today, 'checkin_count': 1})
+
+@bot.message_handler(commands=['leaderboard'])
+def handle_leaderboard(message):
+    print(f"{datetime.datetime.now()} {message.from_user.username} /leaderboard")
+    sorted_streaks = sorted(user_data.items(), key=lambda x: x[1]['streak'], reverse=True)[:5]
+    leaderboard_message = "Streak:\n"
+    for rank, (user_id, data) in enumerate(sorted_streaks, start=1):
+        username = data['username']
+        streak = data['streak']
+        leaderboard_message += f"{rank}. @{username} - {streak} days\n"
+    leaderboard_message += "\n"
+    sorted_checkins = sorted(user_data.items(), key=lambda x: x[1]['total_checkins'], reverse=True)[:5]
+    leaderboard_message += "Check-ins:\n"
+    for rank, (user_id, data) in enumerate(sorted_checkins, start=1):
+        username = data['username']
+        total_checkins = data['total_checkins']
+        leaderboard_message += f"{rank}. @{username} - {total_checkins}\n"
+    bot.send_message(message.chat.id, leaderboard_message)
+
+if __name__ == "__main__":
+    bot.polling(none_stop=True)
