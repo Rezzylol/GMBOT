@@ -39,21 +39,6 @@ def handle_checkin(message):
     user_id = message.from_user.id
     username = message.from_user.username
     today = datetime.date.today().strftime('%Y-%m-%d')
-
-    if user_id in user_data and user_data[user_id]['last_checkin_date'] == today:
-        attempt_count = user_data[user_id]['attempt_count']
-        if attempt_count < 1:
-            bot.send_message(message.chat.id, f"Thanks, @{username}! You've been checked in for today. {user_data[user_id]['streak']} days in a row so far. Total check-ins: {user_data[user_id]['total_checkins']}.")
-        elif attempt_count == 1:
-            bot.send_message(message.chat.id, f"Good morning again, @{username}! Love the enthusiasm, but you've already checked in.")
-        elif attempt_count == 69:
-            bot.send_message(message.chat.id, f"nice.")
-        else:
-            bot.send_message(message.chat.id, f"Good morning again, @{username}! Love the enthusiasm, but you've tried to check in, like, {attempt_count} times today now.")
-        user_data[user_id]['attempt_count'] += 1
-    else:
-        if user_id not in user_data:
-            user_data[user_id] = {'username': username, 'streak': 0, 'total_checkins': 0, 'last_checkin_date': None, 'attempt_count': 1}
         else:
             user_data[user_id]['streak'] = 1
             user_data[user_id]['attempt_count'] = 1
