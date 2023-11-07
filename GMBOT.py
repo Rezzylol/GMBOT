@@ -291,6 +291,10 @@ def check_in(message):
             reply = f"Good morning again, @{username}! Love the enthusiasm, you've tried to check in, like, {attempts_today} times today now."
         bot.reply_to(message, reply)
 
+@bot.message_handler(func=lambda message: message.text.lower() in ['good night', 'gn'])
+def goodnight(message):
+    bot.reply_to(message, "oh no! Don't go to bed! Your streak is now 0.")
+
 @bot.message_handler(commands=['leaderboard'])
 def leaderboard(message):
     log_to_control_chat(f"{message.text} {message.from_user.username}")
@@ -415,5 +419,5 @@ def sabre(message):
         bot.reply_to(message, "thoughts? @SabreDance")
     elif 50 <= result <= 60:
         log_to_control_chat(f"sabre<=5 {message.from_user.username}")
-
+ 
 bot.polling()
