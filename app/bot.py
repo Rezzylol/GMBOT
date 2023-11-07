@@ -397,21 +397,6 @@ def roll_dice(message):
     write_credits(user_id, credits)
     bot.reply_to(message, response)
 
-
-######################
-
-@bot.message_handler(commands=['roulette'])
-def send_game_message(message):
-    markup = types.ReplyKeyboardMarkup(row_width=2)
-    btn1 = types.KeyboardButton("/red")
-    btn2 = types.KeyboardButton("/black")
-    btn3 = types.KeyboardButton("/leave")
-    markup.add(btn1, btn2, btn3)
-    bot.send_message(chat_id=msg.chat.id, text="What would you like to bet on?", reply_markup=markup)
-
-
-#######################
-
 @bot.message_handler(commands=['easteregg'])
 def leaderboard(message):
     log_to_control_chat(f"{message.text} {message.from_user.username}")
