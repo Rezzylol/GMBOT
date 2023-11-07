@@ -1,0 +1,9 @@
+version: '3'
+services:
+  gmbot:
+    build:
+      context: .
+    container_name: gmbot
+    restart: unless-stopped
+    volumes:
+      - /opt/docker/gmbot:/data
