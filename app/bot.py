@@ -430,7 +430,7 @@ def rezzy(message):
 def handle_all_messages(message):
     if str(message.chat.id) == MAIN_CHAT_ID:
         with open(FILE_MESSAGES, 'a') as file:
-            file.write(message.text.replace('\n', ' ') + ' ')
+            file.write(re.sub(r'\s+', ' ', message.text) + ' ')
         
         message_count = increment_message_count()
 
