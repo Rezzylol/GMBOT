@@ -11,6 +11,7 @@ import threading
 VERSION = "0.0.1-alpha1 build 4"
 API_KEY = os.getenv('API_KEY')
 CONTROL_CHAT_ID = '-4070279760'
+MAIN_CHAT_ID = '-1735412957'
 ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 CREDITS_STARTING = 100
@@ -427,24 +428,25 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
-    with open(FILE_MESSAGES, 'a') as file:
-        file.write(message.text + ' ')
-    
-    message_count = increment_message_count()
-
-    if message_count % MESSAGES_MAX == 0:
-        with open(FILE_MESSAGES, 'r') as file:
-            all_messages = file.read().split()
+    if str(message.chat.id) == MAIN_CHAT_ID:
+        with open(FILE_MESSAGES, 'a') as file:
+            file.write(message.text + ' ')
         
-        if len(all_messages) >= 10:
-            selected_messages = ' '.join(random.sample(all_messages, 10))
+        message_count = increment_message_count()
 
-            bot.reply_to(message, selected_messages)
+        if message_count % MESSAGES_MAX == 0:
+            with open(FILE_MESSAGES, 'r') as file:
+                all_messages = file.read().split()
             
-            with open(FILE_MESSAGES, 'w') as file:
-                file.truncate(0)
-            with open(FILE_MESSAGE_COUNT, 'w') as file:
-                file.write('0')
+            if len(all_messages) >= 10:
+                selected_messages = ' '.join(random.sample(all_messages, 10))
+
+                bot.reply_to(message, selected_messages)
+                
+                with open(FILE_MESSAGES, 'w') as file:
+                    file.truncate(0)
+                with open(FILE_MESSAGE_COUNT, 'w') as file:
+                    file.write('0')
 
     result = random.randint(1, 1000)
     if result == 55:
