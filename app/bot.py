@@ -402,7 +402,7 @@ def roll_dice(message):
 
 @bot.message_handler(commands=['roulette'])
 def send_game_message(message):
-    markup = types.ReplyKeyboardMarkup
+    markup = types.ReplyKeyboardMarkup(row_width=2)
     btn1 = types.KeyboardButton("/red")
     btn2 = types.KeyboardButton("/black")
     btn3 = types.KeyboardButton("/leave")
