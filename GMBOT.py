@@ -2,6 +2,7 @@ import csv
 import os
 import pytz
 import random
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -13,9 +14,13 @@ API_KEY = os.getenv('API_KEY')
 CONTROL_CHAT_ID = '-4070279760'
 ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
+CREDITS_STARTING = 100
+FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
+FILE_CREDITS = '/data/credits.csv'
 FILE_IGNORE_LIST = '/data/ignore_list.csv'
 FILE_QUOTES = '/data/quotes.txt'
+GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning team|good morningverage|good rawrning)[,.!?]*\s*'
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 
@@ -29,7 +34,7 @@ def log_to_control_chat(message):
 
 log_to_control_chat(f"init")
 
-for file_path in [FILE_CHECK_INS, FILE_IGNORE_LIST]:
+for file_path in [FILE_ATTEMPTS, FILE_CHECK_INS, FILE_CREDITS, FILE_IGNORE_LIST]:
     if not os.path.isfile(file_path):
         with open(file_path, 'w', newline='') as file:
             writer = csv.writer(file)
@@ -79,7 +84,7 @@ def delete_lines_from_csv(file_path, line_numbers):
 
     if not all(0 <= ln < len(rows) for ln in line_numbers):
         log_to_control_chat("One or more line numbers are out of range.")
-        raise ValueError("One or more line numbers are out of range.")
+        return
 
     with open(file_path, 'w', newline='') as outfile:
         writer = csv.writer(outfile)
@@ -117,14 +122,21 @@ def check_ignore_list(username):
     except FileNotFoundError:
         return False
 
-def update_ignore_list(username):
-    log_to_control_chat(f"ignoring {username}")
+def ignore_user(username):
+    log_to_control_chat(f"ignore_user {username}")
     now = get_tz_now().isoformat()
     with open(FILE_IGNORE_LIST, 'a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([username, now])
 
+def log_attempt(username):
+    now = get_tz_now().isoformat()
+    with open(FILE_ATTEMPTS, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([now, username])
+
 def check_in_user(message):
+    log_to_control_chat(f"check_in_user {message.from_user.username}")
     username = message.from_user.username
     now = get_tz_now()
     date_today = now.date()
@@ -149,6 +161,7 @@ def check_in_user(message):
     bot.reply_to(message, reply)
 
 def ask_math_question(message, attempts=0, sent_message=None):
+    log_to_control_chat(f"ask_math_question {message.from_user.username}")
     username = message.from_user.username
     if attempts == 0:
         question, answer = get_random_math_question()
@@ -162,7 +175,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
     def check_timeout():
         if datetime.now() - question_time >= timedelta(seconds=ATTEMPT_TIMEOUT):
             bot.edit_message_text(chat_id=message.chat.id, message_id=sent_message.message_id, text=f"See you in 7 days!")
-            update_ignore_list(username)
+            ignore_user(username)
 
     def check_answer(msg):
         nonlocal answer, attempts
@@ -183,7 +196,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
             attempts += 1
             if attempts >= ATTEMPT_MAX:
                 bot.reply_to(msg, "See you in 7 days!")
-                update_ignore_list(username)
+                ignore_user(username)
             else:
                 ask_math_question(message, attempts, sent_message)
 
@@ -204,22 +217,19 @@ def list_handler(message):
 
 @bot.message_handler(commands=['ignore'])
 def add_ignore(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
     if str(message.chat.id) == CONTROL_CHAT_ID:
         try:
             _, username = message.text.split(' ')
-            update_ignore_list(username)
-            log_to_control_chat(f"Added {username} to ignore list.")
+            ignore_user(username)
         except ValueError:
-            log_to_control_chat("Please provide line numbers separated by commas, e.g. /ignore Keikuris")
+            log_to_control_chat("Provide line numbers separated by commas, e.g. /ignore Keikuris")
         except Exception as e:
             log_to_control_chat(f"An error occurred: {e}")
     else:
         bot.reply_to(message, "This command can only be used in the control chat.")
 
 @bot.message_handler(commands=['delete', 'unignore'])
-def handle_delete(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
+def delete_handler(message):
     command = message.text.split()[0].lower()
     file_path = FILE_CHECK_INS if command == "/delete" else FILE_IGNORE_LIST
     if str(message.chat.id) == CONTROL_CHAT_ID:
@@ -229,7 +239,7 @@ def handle_delete(message):
             deleted_count = delete_lines_from_csv(file_path, line_numbers)
             log_to_control_chat(f"Deleted {deleted_count} entries from the CSV.")
         except ValueError:
-            log_to_control_chat(f"Please provide line numbers separated by commas, e.g. {command} 1,2,3...")
+            log_to_control_chat(f"Provide line numbers separated by commas, e.g. {command} 1,2,3...")
         except Exception as e:
             log_to_control_chat(f"An error occurred: {e}")
     else:
@@ -237,9 +247,8 @@ def handle_delete(message):
 
 @bot.message_handler(commands=['restart'])
 def restart_bot(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
     if str(message.chat.id) == CONTROL_CHAT_ID:
-        log_to_control_chat("restarting...")
+        log_to_control_chat("Restarting...")
         sys.exit()
     else:
         bot.reply_to(message, "This command can only be used in the control chat.")
@@ -248,16 +257,18 @@ def restart_bot(message):
 def debug_bot(message):
     log_to_control_chat(message)
 
-@bot.message_handler(func=lambda message: message.text.lower() in ['good morning', 'gm', 'good morning beverage', 'gm beverage', 'good rawrning', 'good morning team', 'good morningverage'])
+@bot.message_handler(func=lambda message: re.match(GM_REGEX, message.text.lower()))
 def check_in(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
+    log_to_control_chat(f"check_in {message.from_user.username}")
     username = message.from_user.username
     if check_ignore_list(username):
         bot.reply_to(message, f"Good morning, @{username}! You've been ignored for 7 days for failing my test. Please try again later.")
     else:
+        log_attempt(username)
         now = get_tz_now()
         date_today = now.date()
         check_ins_today = 0
+        attempts_today = 0
         with open(FILE_CHECK_INS, 'r+', newline='') as file:
             reader = csv.reader(file)
             check_ins = [row for row in reader]
@@ -265,23 +276,28 @@ def check_in(message):
                 check_in_date = datetime.fromisoformat(row[0]).date()
                 if row[1] == username and check_in_date == date_today:
                     check_ins_today += 1
-        today_check_ins = check_ins_today + 1
-        if today_check_ins == 1:
+        with open(FILE_ATTEMPTS, 'r', newline='') as file:
+            reader = csv.reader(file)
+            attempts_today = sum(1 for row in reader if row[1] == username and datetime.fromisoformat(row[0]).date() == date_today)
+        if check_ins_today == 0:
             result = random.randint(1, 10)
             if result == 5:
-                log_to_control_chat("math question triggered")
                 ask_math_question(message)
             else:
                 check_in_user(message)
-        elif today_check_ins == 69:
+        elif attempts_today == 69:
             reply = "nice." # kei's easter egg
         else:
-            reply = f"Good morning again, @{username}! Love the enthusiasm, you've tried to check in, like, {today_check_ins} times today now."
+            reply = f"Good morning again, @{username}! Love the enthusiasm, you've tried to check in, like, {attempts_today} times today now."
         bot.reply_to(message, reply)
+
+@bot.message_handler(func=lambda message: message.text.lower() in ['good night', 'gn'])
+def goodnight(message):
+    bot.reply_to(message, "oh no! Don't go to bed! Your streak is now 0.")
 
 @bot.message_handler(commands=['leaderboard'])
 def leaderboard(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
+    log_to_control_chat(f"{message.text} {message.from_user.username}")
     user_data = defaultdict(lambda: {'streak': 0, 'total': 0, 'last_check_in': None, 'days_checked_in': set()})
     with open(FILE_CHECK_INS, 'r') as file:
         reader = csv.reader(file)
@@ -303,9 +319,71 @@ def leaderboard(message):
     reply = f"🏆 Streaks:\n{streaks_message}\n\n🏆 Check-ins:\n{totals_message}"
     bot.reply_to(message, reply)
 
+def read_credits(user_id):
+    with open(FILE_CREDITS, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            if row['user_id'] == str(user_id):
+                return int(row['credits'])
+    return None
+
+def write_credits(user_id, credits):
+    temp_file = FILE_CREDITS + '.tmp'
+    with open(FILE_CREDITS, 'r') as file, open(temp_file, 'w', newline='') as outfile:
+        reader = csv.DictReader(file)
+        writer = csv.DictWriter(outfile, fieldnames=['user_id', 'credits'])
+        writer.writeheader()
+        found = False
+        for row in reader:
+            if row['user_id'] == str(user_id):
+                row['credits'] = credits
+                found = True
+            writer.writerow(row)
+        if not found:
+            writer.writerow({'user_id': user_id, 'credits': credits})
+    os.replace(temp_file, FILE_CREDITS)
+
+def init_credits(user_id):
+    if read_credits(user_id) is None:
+        write_credits(user_id, CREDITS_STARTING)
+
+@bot.message_handler(commands=['diceroll'])
+def roll_dice(message):
+    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    user_id = message.from_user.id
+    init_credits(user_id)
+    credits = read_credits(user_id)
+
+    if credits < 10:
+        bot.reply_to(message, "You don't have enough credits to roll the dice!")
+        return
+
+    result = random.randint(1, 6)
+
+    if result == 6:
+        credits += 1000
+        response = f"Congratulations! You rolled a {result} and won 1000 credits! You now have {credits} credits."
+    elif result == 5:
+        credits += 25
+        response = f"You rolled a {result} and won 25 credits. You now have {credits} credits."
+    elif result == 4:
+        response = f"You rolled a {result}. No credits won or lost. You have {credits} credits."
+    elif result == 3:
+        credits -= 5
+        response = f"You rolled a {result} and lost 5 credits. You now have {credits} credits."
+    elif result == 2:
+        credits -= 5
+        response = f"You rolled a {result} and lost 10 credits. You now have {credits} credits."
+    elif result == 1:
+        credits = 0
+        response = f"Oops! You rolled a {result} and lost all your credits. You now have {credits} credits."
+
+    write_credits(user_id, credits)
+    bot.reply_to(message, response)
+
 @bot.message_handler(commands=['easteregg'])
 def leaderboard(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
+    log_to_control_chat(f"{message.text} {message.from_user.username}")
     if message.from_user.is_premium:
         reply = random.choice(quotes)
     else:
@@ -314,7 +392,7 @@ def leaderboard(message):
 
 @bot.message_handler(commands=['about'])
 def leaderboard(message):
-    log_to_control_chat(f"{message.from_user.username} {message.text}")
+    log_to_control_chat(f"{message.text} {message.from_user.username}")
     reply = (
         f"GMBOT {VERSION}\n"
         f"\n"
@@ -328,23 +406,18 @@ def leaderboard(message):
 def rezzy(message):
     result = random.randint(1, 2500)
     if result == 55:
-        log_to_control_chat("rezzy's easter egg #1 triggered")
+        log_to_control_chat(f"rezzy")
         bot.reply_to(message, "alright alright thats enough")
     elif 50 <= result <= 60:
-        log_to_control_chat(f"rezzy's easter egg #1 close result: {result}")
+        log_to_control_chat(f"rezzy<=5")
 
 @bot.message_handler(func=lambda m: True)
 def sabre(message):
     result = random.randint(1, 1000)
     if result == 55:
-        log_to_control_chat("rezzy's easter egg #2 triggered")
+        log_to_control_chat(f"sabre {message.from_user.username}")
         bot.reply_to(message, "thoughts? @SabreDance")
     elif 50 <= result <= 60:
-        log_to_control_chat(f"rezzy's easter egg #2 close result: {result}")
-        
-@bot.message_handler(func=lambda message: message.text.lower() in ['good night', 'gn'])
-def goodnight(message):
-    bot.reply_to(message, "oh no! Don't go to bed! Your streak is now 0.")
-    
-    
+        log_to_control_chat(f"sabre<=5 {message.from_user.username}")
+ 
 bot.polling()
