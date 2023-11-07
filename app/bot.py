@@ -3,7 +3,6 @@ import os
 import pytz
 import random
 import re
-import sys
 from collections import defaultdict
 from datetime import datetime, timedelta
 from telebot import TeleBot, types
