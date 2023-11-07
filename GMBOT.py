@@ -341,5 +341,10 @@ def sabre(message):
         bot.reply_to(message, "thoughts? @SabreDance")
     elif 50 <= result <= 60:
         log_to_control_chat(f"rezzy's easter egg #2 close result: {result}")
-
+        
+@bot.message_handler(func=lambda message: message.text.lower() in ['good night', 'gn'])
+def goodnight(message):
+    bot.reply_to(message, "oh no! Don't go to bed! Your streak is now 0.")
+    
+    
 bot.polling()
