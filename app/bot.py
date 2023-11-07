@@ -18,8 +18,11 @@ FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
 FILE_CREDITS = '/data/credits.csv'
 FILE_IGNORE_LIST = '/data/ignore_list.csv'
+FILE_MESSAGE_COUNT = '/data/message_count.txt'
+FILE_MESSAGES = '/data/messages.txt'
 FILE_QUOTES = '/data/quotes.txt'
 GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning team|good morningverage|good rawrning)[,.!?]*\s*'
+MESSAGES_MAX = 12
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 
@@ -37,6 +40,11 @@ for file_path in [FILE_ATTEMPTS, FILE_CHECK_INS, FILE_CREDITS, FILE_IGNORE_LIST]
     if not os.path.isfile(file_path):
         with open(file_path, 'w', newline='') as file:
             writer = csv.writer(file)
+
+for file_path in [FILE_MESSAGE_COUNT, FILE_MESSAGES]:
+    if not os.path.isfile(file_path):
+        with open(file_path, 'w', newline='') as file:
+            pass
 
 if os.path.isfile(FILE_QUOTES):
     with open(FILE_QUOTES, 'r') as file:
@@ -203,6 +211,21 @@ def ask_math_question(message, attempts=0, sent_message=None):
     timeout_timer.start()
 
     bot.register_next_step_handler(sent_message, check_answer)
+
+def get_message_count():
+    try:
+        with open(FILE_MESSAGE_COUNT, 'r') as file:
+            return int(file.read().strip())
+    except FileNotFoundError:
+        return 0
+    except ValueError:
+        return 0
+
+def increment_message_count():
+    count = get_message_count() + 1
+    with open(FILE_MESSAGE_COUNT, 'w') as file:
+        file.write(str(count))
+    return count
 
 @bot.message_handler(commands=['list', 'ignored'])
 def list_handler(message):
@@ -403,12 +426,32 @@ def rezzy(message):
         log_to_control_chat(f"rezzy<=5")
 
 @bot.message_handler(func=lambda m: True)
-def sabre(message):
+def handle_all_messages(message):
+    if str(message.chat.id) == CONTROL_CHAT_ID:
+        with open(FILE_MESSAGES, 'a') as file:
+            file.write(message.text + ' ')
+        
+        message_count = increment_message_count()
+
+        if message_count % MESSAGES_MAX == 0:
+            with open(FILE_MESSAGES, 'r') as file:
+                all_messages = file.read().split()
+            
+            if len(all_messages) >= 10:
+                selected_messages = ' '.join(random.sample(all_messages, 10))
+
+                bot.reply_to(message, selected_messages)
+                
+                with open(FILE_MESSAGES, 'w') as file:
+                    file.truncate(0)
+                with open(FILE_MESSAGE_COUNT, 'w') as file:
+                    file.write('0')
+
     result = random.randint(1, 1000)
     if result == 55:
         log_to_control_chat(f"sabre {message.from_user.username}")
         bot.reply_to(message, "thoughts? @SabreDance")
     elif 50 <= result <= 60:
         log_to_control_chat(f"sabre<=5 {message.from_user.username}")
- 
+
 bot.polling()
