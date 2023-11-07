@@ -245,14 +245,6 @@ def delete_handler(message):
     else:
         bot.reply_to(message, "This command can only be used in the control chat.")
 
-@bot.message_handler(commands=['restart'])
-def restart_bot(message):
-    if str(message.chat.id) == CONTROL_CHAT_ID:
-        log_to_control_chat("Restarting...")
-        sys.exit()
-    else:
-        bot.reply_to(message, "This command can only be used in the control chat.")
-
 @bot.message_handler(commands=['debug'])
 def debug_bot(message):
     log_to_control_chat(message)
