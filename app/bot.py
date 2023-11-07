@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from telebot import TeleBot, types
 import threading
 
-VERSION = "0.0.1-alpha1 build 3"
+VERSION = "0.0.1-alpha1 build 4"
 API_KEY = os.getenv('API_KEY')
 CONTROL_CHAT_ID = '-4070279760'
 ATTEMPT_MAX = 3
