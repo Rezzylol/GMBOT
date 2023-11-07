@@ -443,10 +443,10 @@ def handle_all_messages(message):
 
                 bot.reply_to(message, selected_messages)
                 
-                with open(FILE_MESSAGES, 'w') as file:
-                    file.truncate(0)
-                with open(FILE_MESSAGE_COUNT, 'w') as file:
-                    file.write('0')
+                #with open(FILE_MESSAGES, 'w') as file:
+                #    file.truncate(0)
+                #with open(FILE_MESSAGE_COUNT, 'w') as file:
+                #    file.write('0')
 
     result = random.randint(1, 1000)
     if result == 55:
