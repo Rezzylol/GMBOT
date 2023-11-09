@@ -41,10 +41,12 @@ def log_to_control_chat(message):
 
 response = requests.get(URL_REPO)
 if response.ok:
-    commit_date = datetime.strptime(response.json()['commit']['committer']['date'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
+    commit_author = response.json()['commit']['author']['name']
+    commit_date = datetime.strptime(response.json()['commit']['author']['date'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
     commit_message = response.json()['commit']['message']
     commit_sha = response.json()['sha'][:7]
-    log_to_control_chat(f"```{VERSION}\n{commit_sha} - {commit_date}\n{commit_message}```")
+    commit_url = response.json()['commit']['html_url']
+    log_to_control_chat(f"```init\n{VERSION}\n{commit_sha} - {commit_date} - {commit_author}\n{commit_message}```{commit_url}")
 
 for file_path in [FILE_ATTEMPTS, FILE_CHECK_INS, FILE_CREDITS, FILE_IGNORE_LIST]:
     if not os.path.isfile(file_path):
