@@ -435,7 +435,7 @@ def handle_all_messages(message):
         
         message_count = increment_message_count()
 
-        if message_count % MESSAGES_MAX == 0:
+        if message_count >= MESSAGES_MAX:
             with open(FILE_MESSAGES, 'r') as file:
                 all_messages = file.read().split()
             
@@ -446,8 +446,8 @@ def handle_all_messages(message):
                 
                 #with open(FILE_MESSAGES, 'w') as file:
                 #    file.truncate(0)
-                #with open(FILE_MESSAGE_COUNT, 'w') as file:
-                #    file.write('0')
+                with open(FILE_MESSAGE_COUNT, 'w') as file:
+                    file.write('0')
 
     result = random.randint(1, 1000)
     if result == 55:
