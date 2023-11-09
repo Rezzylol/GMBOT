@@ -18,6 +18,7 @@ ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 BESSAGES = 25
 CREDITS_STARTING = 100
+DONT_CONVERT = ['the', 'there', 'they', 'their', 'them']
 URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
@@ -467,10 +468,12 @@ def handle_all_messages(message):
             for word in words:
                 if emoji.emoji_count(word) > 0:
                     bessage.append(word)
-                if len(word) > 1:
-                    bessage.append('b' + word[1:])
-                else:
+                elif word in DONT_CONVERT:
                     bessage.append(word)
+                elif len(word) == 1:
+                    bessage.append(word)
+                else:
+                    bessage.append('b' + word[1:])
             bessage = ' '.join(bessage)
             bot.reply_to(message, bessage)
 
