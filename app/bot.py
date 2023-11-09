@@ -41,7 +41,7 @@ def log_to_control_chat(message):
 
 response = requests.get(URL_REPO)
 if response.ok:
-    commit_date = response.json()['commit']['committer']['date'].strftime("%Y-%m-%d %H:%M:%S")
+    commit_date = datetime.strptime(response.json()['commit']['committer']['date'], "%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d %H:%M:%S")
     commit_message = response.json()['commit']['message']
     commit_sha = response.json()['sha'][:7]
     log_to_control_chat(f"```{VERSION}\n{commit_sha} - {commit_date}\n{commit_message}```")
