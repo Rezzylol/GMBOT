@@ -8,7 +8,6 @@ import requests
 import threading
 from collections import defaultdict
 from datetime import datetime, timedelta
-from git import Repo
 from telebot import TeleBot, types
 
 VERSION = "0.0.1-alpha1 build 5"
