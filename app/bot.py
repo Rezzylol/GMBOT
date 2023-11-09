@@ -454,8 +454,7 @@ def handle_all_messages(message):
             words = message.text.lower().split()
             bessage = []
             for word in words:
-                bessage = 'b' + word[1:]
-                bessage.append(modified_word)
+                bessage.append('b' + word[1:])
             bessage = ' '.join(bessage)
             bot.reply_to(message, bessage)
 
