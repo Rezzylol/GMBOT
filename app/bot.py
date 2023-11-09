@@ -278,7 +278,7 @@ def check_in(message):
     log_to_control_chat(f"check_in {message.from_user.username}")
     username = message.from_user.username
     if check_ignore_list(username):
-        bot.reply_to(message, f"Good morning, @{username}! You've been ignored for 7 days for failing my test. Please try again later.")
+        reply = f"Good morning, @{username}! You've been ignored for 7 days for failing my test. Please try again later."
     else:
         log_attempt(username)
         now = get_tz_now()
