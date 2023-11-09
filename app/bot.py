@@ -4,6 +4,7 @@ import os
 import pytz
 import random
 import re
+import requests
 import threading
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -18,7 +19,7 @@ ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 BESSAGES = 25
 CREDITS_STARTING = 100
-DIR_REPO = '/bot'
+URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
 FILE_CREDITS = '/data/credits.csv'
@@ -39,11 +40,12 @@ def log_to_control_chat(message):
     print(f"{get_tz_now().isoformat()} {message}")
     bot.send_message(CONTROL_CHAT_ID, f"{message}", parse_mode='Markdown')
 
-repo = Repo(DIR_REPO)
-latest_commit = repo.head.commit
-commit_hash = latest_commit.hexsha[:7]
-commit_time = latest_commit.committed_datetime.strftime("%Y-%m-%d %H:%M:%S")
-log_to_control_chat(f"```init {VERSION}\n{commit_hash} - {commit_time}\n{latest_commit.message}```")
+response = requests.get(URL_REPO)
+if response.ok:
+    commit_date = response.json()['commit']['committer']['date']
+    commit_message = response.json()['commit']['message']
+    commit_sha = response.json()['sha'][:7]
+    log_to_control_chat(f"```init {VERSION}\n{commit_sha} - {commit_date}\n{commit_message}```")
 
 for file_path in [FILE_ATTEMPTS, FILE_CHECK_INS, FILE_CREDITS, FILE_IGNORE_LIST]:
     if not os.path.isfile(file_path):
