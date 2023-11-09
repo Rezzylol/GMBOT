@@ -431,8 +431,10 @@ def rezzy(message):
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
     if str(message.chat.id) == MAIN_CHAT_ID:
+        message_lower = message.text.lower()
+
         with open(FILE_MESSAGES, 'a') as file:
-            file.write(re.sub(r'\s+', ' ', message.text.lower()) + ' ')
+            file.write(re.sub(r'\s+', ' ', message_lower) + ' ')
         
         message_count = increment_message_count()
 
@@ -451,7 +453,7 @@ def handle_all_messages(message):
                     file.write('0')
 
         if message_count == BESSAGES or message_count == BESSAGES + 1:
-            words = message.text.lower().split()
+            words = message_lower.split()
             bessage = []
             for word in words:
                 bessage.append('b' + word[1:])
