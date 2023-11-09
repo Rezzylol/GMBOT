@@ -1,9 +1,9 @@
 import csv
+import emoji
 import os
 import pytz
 import random
 import re
-import random
 from collections import defaultdict
 from datetime import datetime, timedelta
 from telebot import TeleBot, types
@@ -456,6 +456,8 @@ def handle_all_messages(message):
             words = message_lower.split()
             bessage = []
             for word in words:
+                if emoji.emoji_count(word) > 0:
+                    bessage.append(word)
                 if len(word) > 1:
                     bessage.append('b' + word[1:])
                 else:
