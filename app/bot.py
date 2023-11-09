@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from telebot import TeleBot, types
 import threading
 
-VERSION = "0.0.1-alpha1 build 4"
+VERSION = "0.0.1-alpha1 build 5"
 API_KEY = os.getenv('API_KEY')
 CONTROL_CHAT_ID = '-4070279760'
 MAIN_CHAT_ID = '-1001735412957'
@@ -59,12 +59,12 @@ def send_paginated_list(file_path, list_name, message, page_number):
         lines = list(reader)
 
     if not lines:
-        bot.send_message(CONTROL_CHAT_ID, "No data available.")
+        bot.send_message(CONTROL_CHAT_ID, "no data available.")
         return
 
     paginated_lines = list((lines[i:i + PAGE_SIZE] for i in range(0, len(lines), PAGE_SIZE)))
     if page_number < 0 or page_number >= len(paginated_lines):
-        bot.send_message(CONTROL_CHAT_ID, "Invalid page number.")
+        bot.send_message(CONTROL_CHAT_ID, "invalid page number.")
         return
 
     page_content = paginated_lines[page_number]
@@ -72,9 +72,9 @@ def send_paginated_list(file_path, list_name, message, page_number):
 
     markup = types.InlineKeyboardMarkup()
     if page_number > 0:
-        markup.add(types.InlineKeyboardButton("Previous", callback_data=f"{list_name}_prev_{page_number - 1}"))
+        markup.add(types.InlineKeyboardButton("previous", callback_data=f"{list_name}_prev_{page_number - 1}"))
     if page_number < len(paginated_lines) - 1:
-        markup.add(types.InlineKeyboardButton("Next", callback_data=f"{list_name}_next_{page_number + 1}"))
+        markup.add(types.InlineKeyboardButton("next", callback_data=f"{list_name}_next_{page_number + 1}"))
 
     bot.send_message(CONTROL_CHAT_ID, response, reply_markup=markup)
 
@@ -93,7 +93,7 @@ def delete_lines_from_csv(file_path, line_numbers):
         rows = list(csv.reader(infile))
 
     if not all(0 <= ln < len(rows) for ln in line_numbers):
-        log_to_control_chat("One or more line numbers are out of range.")
+        log_to_control_chat("one or more line numbers are out of range.")
         return
 
     with open(file_path, 'w', newline='') as outfile:
@@ -167,7 +167,7 @@ def check_in_user(message):
             elif (check_in_date - last_check_in_date).days > 1:
                 streak = 1
             last_check_in_date = check_in_date
-    reply = f"Good morning, @{username}! You've been checked in for today. {streak} days in a row so far."
+    reply = f"good morning, @{username}! you've been checked in for today. {streak} days in a row so far."
     bot.reply_to(message, reply)
 
 def ask_math_question(message, attempts=0, sent_message=None):
@@ -184,7 +184,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
 
     def check_timeout():
         if datetime.now() - question_time >= timedelta(seconds=ATTEMPT_TIMEOUT):
-            bot.edit_message_text(chat_id=message.chat.id, message_id=sent_message.message_id, text=f"See you in 7 days!")
+            bot.edit_message_text(chat_id=message.chat.id, message_id=sent_message.message_id, text=f"see you in 7 days!")
             ignore_user(username)
 
     def check_answer(msg):
@@ -197,7 +197,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
         try:
             user_answer = int(msg.text)
         except ValueError:
-            bot.reply_to(msg, "That doesn't seem to be a number. Try again.")
+            bot.reply_to(msg, "that doesn't seem to be a number. Try again.")
             return
 
         if user_answer == answer:
@@ -205,7 +205,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
         else:
             attempts += 1
             if attempts >= ATTEMPT_MAX:
-                bot.reply_to(msg, "See you in 7 days!")
+                bot.reply_to(msg, "see you in 7 days!")
                 ignore_user(username)
             else:
                 ask_math_question(message, attempts, sent_message)
@@ -238,7 +238,7 @@ def list_handler(message):
     if str(message.chat.id) == CONTROL_CHAT_ID:
         send_paginated_list(file_path, list_name, message, 0)
     else:
-        bot.reply_to(message, "This command can only be used in the control chat.")
+        bot.reply_to(message, "this command can only be used in the control chat.")
 
 @bot.message_handler(commands=['ignore'])
 def add_ignore(message):
@@ -247,11 +247,11 @@ def add_ignore(message):
             _, username = message.text.split(' ')
             ignore_user(username)
         except ValueError:
-            log_to_control_chat("Provide line numbers separated by commas, e.g. /ignore Keikuris")
+            log_to_control_chat("provide line numbers separated by commas, e.g. /ignore Keikuris")
         except Exception as e:
-            log_to_control_chat(f"An error occurred: {e}")
+            log_to_control_chat(f"an error occurred: {e}")
     else:
-        bot.reply_to(message, "This command can only be used in the control chat.")
+        bot.reply_to(message, "this command can only be used in the control chat.")
 
 @bot.message_handler(commands=['delete', 'unignore'])
 def delete_handler(message):
@@ -262,13 +262,13 @@ def delete_handler(message):
             _, line_numbers = message.text.split(maxsplit=1)
             line_numbers = [int(ln.strip()) for ln in line_numbers.split(',')]
             deleted_count = delete_lines_from_csv(file_path, line_numbers)
-            log_to_control_chat(f"Deleted {deleted_count} entries from the CSV.")
+            log_to_control_chat(f"deleted {deleted_count} entries from the csv.")
         except ValueError:
-            log_to_control_chat(f"Provide line numbers separated by commas, e.g. {command} 1,2,3...")
+            log_to_control_chat(f"provide line numbers separated by commas, e.g. {command} 1,2,3...")
         except Exception as e:
-            log_to_control_chat(f"An error occurred: {e}")
+            log_to_control_chat(f"an error occurred: {e}")
     else:
-        bot.reply_to(message, "This command can only be used in the control chat.")
+        bot.reply_to(message, "this command can only be used in the control chat.")
 
 @bot.message_handler(commands=['debug'])
 def debug_bot(message):
@@ -279,7 +279,7 @@ def check_in(message):
     log_to_control_chat(f"check_in {message.from_user.username}")
     username = message.from_user.username
     if check_ignore_list(username):
-        reply = f"Good morning, @{username}! You've been ignored for 7 days for failing my test. Please try again later."
+        reply = f"good morning, @{username}! you've been ignored for 7 days for failing my test. Please try again later."
     else:
         log_attempt(username)
         now = get_tz_now()
@@ -305,12 +305,12 @@ def check_in(message):
         elif attempts_today == 69:
             reply = "nice." # kei's easter egg
         else:
-            reply = f"Good morning again, @{username}! Love the enthusiasm, you've tried to check in, like, {attempts_today} times today now."
+            reply = f"good morning again, @{username}! love the enthusiasm, you've tried to check in, like, {attempts_today} times today now."
         bot.reply_to(message, reply)
 
 @bot.message_handler(func=lambda message: message.text.lower() in ['good night', 'gn'])
 def goodnight(message):
-    bot.reply_to(message, "oh no! Don't go to bed! Your streak is now 0.")
+    bot.reply_to(message, "oh no! don't go to bed! your streak is now 0.")
 
 @bot.message_handler(commands=['leaderboard'])
 def leaderboard(message):
@@ -333,7 +333,7 @@ def leaderboard(message):
     top_totals = sorted(user_data.items(), key=lambda item: item[1]['total'], reverse=True)[:5]
     streaks_message = "\n".join([f"{idx + 1}. {username} - {data['streak']}" for idx, (username, data) in enumerate(top_streaks)])
     totals_message = "\n".join([f"{idx + 1}. {username} - {data['total']}" for idx, (username, data) in enumerate(top_totals)])
-    reply = f"🏆 Streaks:\n{streaks_message}\n\n🏆 Check-ins:\n{totals_message}"
+    reply = f"🏆 streaks:\n{streaks_message}\n\n🏆 check-ins:\n{totals_message}"
     bot.reply_to(message, reply)
 
 def read_credits(user_id):
@@ -372,28 +372,28 @@ def roll_dice(message):
     credits = read_credits(user_id)
 
     if credits < 10:
-        bot.reply_to(message, "You don't have enough credits to roll the dice!")
+        bot.reply_to(message, "you don't have enough credits.")
         return
 
     result = random.randint(1, 6)
 
     if result == 6:
         credits += 1000
-        response = f"Congratulations! You rolled a {result} and won 1000 credits! You now have {credits} credits."
+        response = f"congratulations! you rolled a {result} and won 1000 credits! you now have {credits} credits."
     elif result == 5:
         credits += 25
-        response = f"You rolled a {result} and won 25 credits. You now have {credits} credits."
+        response = f"you rolled a {result} and won 25 credits. you now have {credits} credits."
     elif result == 4:
-        response = f"You rolled a {result}. No credits won or lost. You have {credits} credits."
+        response = f"you rolled a {result}. No credits won or lost. you have {credits} credits."
     elif result == 3:
         credits -= 5
-        response = f"You rolled a {result} and lost 5 credits. You now have {credits} credits."
+        response = f"you rolled a {result} and lost 5 credits. you now have {credits} credits."
     elif result == 2:
         credits -= 5
-        response = f"You rolled a {result} and lost 10 credits. You now have {credits} credits."
+        response = f"you rolled a {result} and lost 10 credits. you now have {credits} credits."
     elif result == 1:
         credits = 0
-        response = f"Oops! You rolled a {result} and lost all your credits. You now have {credits} credits."
+        response = f"oops! you rolled a {result} and lost all your credits. you now have {credits} credits."
 
     write_credits(user_id, credits)
     bot.reply_to(message, response)
@@ -404,18 +404,18 @@ def leaderboard(message):
     if message.from_user.is_premium:
         reply = random.choice(quotes)
     else:
-        reply = "I'm sorry, this command is only available to Telegram Premium users."
+        reply = "i'm sorry, this command is only available to Telegram Premium users."
     bot.reply_to(message, reply)
 
 @bot.message_handler(commands=['about'])
 def leaderboard(message):
     log_to_control_chat(f"{message.text} {message.from_user.username}")
     reply = (
-        f"GMBOT {VERSION}\n"
+        f"gmbot {VERSION}\n"
         f"\n"
-        f"Created by 🦊🔥 Rezzy & 🐺🐲 Kei\n"
+        f"created by 🦊🔥 Rezzy & 🐺🐲 Kei\n"
         f"\n"
-        f"Best viewed in Netscape Navigator, with a screen resolution of 800x600."
+        f"best viewed in netscape navigator, with a screen resolution of 800x600."
     )
     bot.reply_to(message, reply, parse_mode='HTML')
 
@@ -451,7 +451,7 @@ def handle_all_messages(message):
                     file.write('0')
 
         if message_count == BESSAGES or message_count == BESSAGES + 1:
-            words = input_string.split()
+            words = message.text.lower().split()
             bessage = []
             for word in words:
                 bessage = 'b' + word[1:]
