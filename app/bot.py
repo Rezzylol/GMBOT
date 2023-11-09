@@ -4,10 +4,11 @@ import os
 import pytz
 import random
 import re
+import threading
 from collections import defaultdict
 from datetime import datetime, timedelta
+from git import Repo
 from telebot import TeleBot, types
-import threading
 
 VERSION = "0.0.1-alpha1 build 5"
 API_KEY = os.getenv('API_KEY')
@@ -17,6 +18,7 @@ ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 BESSAGES = 25
 CREDITS_STARTING = 100
+DIR_REPO = '/bot/app'
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
 FILE_CREDITS = '/data/credits.csv'
@@ -35,9 +37,13 @@ def get_tz_now():
 bot = TeleBot(API_KEY)
 def log_to_control_chat(message):
     print(f"{get_tz_now().isoformat()} {message}")
-    bot.send_message(CONTROL_CHAT_ID, f"{message}")
+    bot.send_message(CONTROL_CHAT_ID, f"{message}", parse_mode='Markdown')
 
-log_to_control_chat(f"init")
+repo = Repo(DIR_REPO)
+latest_commit = repo.head.commit
+commit_hash = latest_commit.hexsha[:7]
+commit_time = latest_commit.committed_datetime.strftime("%Y-%m-%d %H:%M:%S")
+log_to_control_chat(f"```init {VERSION}\n{commit_hash} - {commit_time}\n{latest_commit.message}```")
 
 for file_path in [FILE_ATTEMPTS, FILE_CHECK_INS, FILE_CREDITS, FILE_IGNORE_LIST]:
     if not os.path.isfile(file_path):
