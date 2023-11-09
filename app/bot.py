@@ -15,6 +15,7 @@ CONTROL_CHAT_ID = '-4070279760'
 MAIN_CHAT_ID = '-1001735412957'
 ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
+BESSAGES = 25
 CREDITS_STARTING = 100
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
@@ -448,6 +449,15 @@ def handle_all_messages(message):
                 #    file.truncate(0)
                 with open(FILE_MESSAGE_COUNT, 'w') as file:
                     file.write('0')
+
+        if message_count == BESSAGES or message_count == BESSAGES + 1:
+            words = input_string.split()
+            bessage = []
+            for word in words:
+                bessage = 'b' + word[1:]
+                bessage.append(modified_word)
+            bessage = ' '.join(bessage)
+            bot.reply_to(message, bessage)
 
     result = random.randint(1, 1000)
     if result == 55:
