@@ -582,7 +582,7 @@ def send_bet_types(message):
         row = [types.KeyboardButton(bet_type) for bet_type in bet_types[i:i + row_size]]
         markup.row(*row)
 
-    bot.send_message(message.chat.id, "Select a bet type", reply_markup=markup)
+    bot.send_message(call.message.from_user.id, "Select a bet type", reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text in ['Straight', 'Split', 'Street', 'Corner', 'Six Line', 'Dozen', 'Column', 'Red/Black', 'Even/Odd', 'Low/High'])
 def handle_bet_type_selection(message):
