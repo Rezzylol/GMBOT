@@ -434,38 +434,38 @@ class RouletteGame:
 
     def spin_wheel(self):
         result = random.randint(0, 36)
-        total_win = 0
+        payout = 0
         total_bet = sum(bet['amount'] for bet in self.bets)
 
         for bet in self.bets:
             if bet['type'] == 'straight':
                 if int(bet['number']) == result:
-                    total_win += bet['amount'] * 35
+                    payout += bet['amount'] * 35
 
             elif bet['type'] == 'split':
                 numbers = [int(n) for n in bet['number'].split('/')]
                 if result in numbers:
-                    total_win += bet['amount'] * 17
+                    payout += bet['amount'] * 17
 
             elif bet['type'] == 'street':
                 numbers = [int(n) for n in bet['number'].split('-')]
                 if result in range(numbers[0], numbers[-1] + 1):
-                    total_win += bet['amount'] * 11
+                    payout += bet['amount'] * 11
 
             elif bet['type'] == 'corner':
                 numbers = [int(n) for n in bet['number'].split('/')]
                 if result in numbers:
-                    total_win += bet['amount'] * 8
+                    payout += bet['amount'] * 8
 
             elif bet['type'] == 'sixline':
                 numbers = [int(n) for n in bet['number'].split('-')]
                 if result in range(numbers[0], numbers[-1] + 1):
-                    total_win += bet['amount'] * 5
+                    payout += bet['amount'] * 5
 
             elif bet['type'] == 'dozen':
                 dozen_ranges = {1: range(1, 13), 2: range(13, 25), 3: range(25, 37)}
                 if result in dozen_ranges[int(bet['number'])]:
-                    total_win += bet['amount'] * 2
+                    payout += bet['amount'] * 2
 
             elif bet['type'] == 'column':
                 column_numbers = {
@@ -474,24 +474,28 @@ class RouletteGame:
                     3: [i for i in range(1, 37) if i % 3 == 0]
                 }
                 if result in column_numbers[int(bet['number'])]:
-                    total_win += bet['amount'] * 2
+                    payout += bet['amount'] * 2
 
             elif bet['type'] == 'redblack':
                 if (bet['number'] == 'Red' and result in self.red_numbers) or \
                    (bet['number'] == 'Black' and result in self.black_numbers):
-                    total_win += bet['amount']
+                    payout += bet['amount']
 
             elif bet['type'] == 'evenodd':
                 if (bet['number'] == 'Even' and result % 2 == 0 and result != 0) or \
                    (bet['number'] == 'Odd' and result % 2 == 1):
-                    total_win += bet['amount']
+                    payout += bet['amount']
 
             elif bet['type'] == 'lowhigh':
                 if (bet['number'] == 'Low' and 1 <= result <= 18) or \
                    (bet['number'] == 'High' and 19 <= result <= 36):
-                    total_win += bet['amount']
+                    payout += bet['amount']
 
-        self.credits += total_win - total_bet
+        if payout > 0:
+            self.credits += payout
+        else:
+            self.credits -= total_bet
+
         return result, total_bet
 
 games = {}
