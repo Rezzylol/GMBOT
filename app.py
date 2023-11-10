@@ -343,6 +343,10 @@ def leaderboard(message):
     totals_message = "\n".join([f"{idx + 1}. {username} - {data['total']}" for idx, (username, data) in enumerate(top_totals)])
     bot.reply_to(message, f"🏆 <b>streaks</b>\n{streaks_message}\n\n🏆 <b>check-ins</b>\n{totals_message}", parse_mode='HTML')
 
+def init_credits(user_id):
+    if read_credits(user_id) is None:
+        write_credits(user_id, CREDITS_STARTING)
+
 def read_credits(user_id):
     with open(FILE_CREDITS, 'r') as file:
         reader = csv.DictReader(file)
@@ -367,9 +371,14 @@ def write_credits(user_id, credits):
             writer.writerow({'user_id': user_id, 'credits': credits})
     os.replace(temp_file, FILE_CREDITS)
 
-def init_credits(user_id):
-    if read_credits(user_id) is None:
-        write_credits(user_id, CREDITS_STARTING)
+@bot.message_handler(commands=['credits'])
+def credits(message):
+    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    user_id = message.from_user.id
+    init_credits(user_id)
+    credits = read_credits(user_id)
+
+    bot.reply_to(message, "you have <b>{credits} credits</b>.", parse_mode='HTML')
 
 @bot.message_handler(commands=['diceroll'])
 def roll_dice(message):
