@@ -378,7 +378,7 @@ def credits(message):
     init_credits(user_id)
     credits = read_credits(user_id)
 
-    bot.reply_to(message, "you have <b>{credits} credits</b>.", parse_mode='HTML')
+    bot.reply_to(message, f"you have <b>{credits} credits</b>.", parse_mode='HTML')
 
 @bot.message_handler(commands=['diceroll'])
 def roll_dice(message):
