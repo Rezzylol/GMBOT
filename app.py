@@ -547,9 +547,9 @@ def handle_game_menu_options(message):
         net_gain = games[message.from_user.id].credits - games[message.from_user.id].original_credits
 
         if net_gain > 0:
-            response = f"{announcement}\n@{message.from_user.username} won: {net_gain} credits.\nTotal bet: {total_bet} credits."
+            response = f"{announcement}\n@{message.from_user.username} won {net_gain} credits.\nTotal bet: {total_bet} credits."
         elif net_gain < 0:
-            response = f"{announcement}\n@{message.from_user.username} lost: {abs(net_gain)} credits.\nTotal bet: {total_bet} credits."
+            response = f"{announcement}\n@{message.from_user.username} lost {abs(net_gain)} credits.\nTotal bet: {total_bet} credits."
         else:
             response = f"{announcement}\n@{message.from_user.username} neither won nor lost.\nTotal Bet: {total_bet} credits."
 
