@@ -451,6 +451,12 @@ def handle_all_messages(message):
     if str(message.chat.id) == MAIN_CHAT_ID:
         message_lower = message.text.lower()
 
+    if message.reply_to_message and message.text.startswith('s/'):
+        _, pattern, replacement = message.text.split('/')
+        original_text = message.reply_to_message.text
+        new_text = original_text.replace(pattern, replacement)
+        bot.reply_to(message.reply_to_message, new_text)
+
         with open(FILE_MESSAGES, 'a') as file:
             file.write(re.sub(r'\s+', ' ', message_lower) + ' ')
         
