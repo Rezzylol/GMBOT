@@ -37,9 +37,10 @@ def get_tz_now():
     return datetime.now(TIME_ZONE)
 
 bot = TeleBot(API_KEY)
-def log_to_control_chat(message):
+def log_to_control_chat(message, html=True):
+    parse_mode = 'HTML' if html else None
     print(f"{get_tz_now().isoformat()} {message}")
-    bot.send_message(CONTROL_CHAT_ID, f"{message}", parse_mode='HTML')
+    bot.send_message(CONTROL_CHAT_ID, f"{message}", parse_mode=parse_mode)
 
 response = requests.get(URL_REPO)
 if response.ok:
@@ -443,7 +444,7 @@ def rezzy(message):
         log_to_control_chat(f"rezzy")
         bot.reply_to(message, "alright alright thats enough")
     elif 50 <= result <= 60:
-        log_to_control_chat(f"rezzy\<=5")
+        log_to_control_chat(f"rezzy<=5", False)
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
@@ -493,6 +494,6 @@ def handle_all_messages(message):
         log_to_control_chat(f"sabre {message.from_user.username}")
         bot.reply_to(message, "thoughts? @SabreDance")
     elif 50 <= result <= 60:
-        log_to_control_chat(f"sabre\<=5 {message.from_user.username}")
+        log_to_control_chat(f"sabre<=5 {message.from_user.username}", False)
 
 bot.polling()
