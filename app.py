@@ -473,7 +473,7 @@ def handle_all_messages(message):
             words = message_lower.split()
             bessage = []
             for word in words:
-                if emoji.emoji_count(word) > 0:
+                if emoji.emoji_count(word[0]) > 0:
                     bessage.append(word)
                 elif word in DONT_CONVERT:
                     bessage.append(word)
