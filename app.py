@@ -460,18 +460,18 @@ def handle_all_messages(message):
 
         with open(FILE_MESSAGES, 'a') as file:
             file.write(re.sub(r'\s+', ' ', message_lower) + ' ')
-        
+
         message_count = increment_message_count()
 
         if message_count >= MESSAGES_MAX:
             with open(FILE_MESSAGES, 'r') as file:
                 all_messages = file.read().split()
-            
+
             if len(all_messages) >= 10:
                 selected_messages = ' '.join(random.sample(all_messages, 10))
 
                 bot.reply_to(message, selected_messages)
-                
+
                 #with open(FILE_MESSAGES, 'w') as file:
                 #    file.truncate(0)
                 with open(FILE_MESSAGE_COUNT, 'w') as file:
@@ -480,7 +480,7 @@ def handle_all_messages(message):
         if message_count == BESSAGES or message_count == BESSAGES + 1:
             words = message_lower.split()
             bessage = []
-            for word in words: 
+            for word in words:
                 if emoji.emoji_count(word[0]) > 0:
                     bessage.append(word)
                 elif word in DONT_CONVERT:
