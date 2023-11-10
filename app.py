@@ -18,7 +18,7 @@ ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 BESSAGES = 50
 CREDITS_STARTING = 100
-DONT_CONVERT = ["the", "that", "there", "they", "their", "them", "my", "was", "were", "we're", "who", "what", "where", "when", "why", "how"]
+DONT_CONVERT = ["the", "that", "there", "they", "their", "them", "was", "were", "we're", "who", "what", "where", "when", "why", "how"]
 URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
@@ -476,10 +476,12 @@ def handle_all_messages(message):
                     bessage.append(word)
                 elif word in DONT_CONVERT:
                     bessage.append(word)
-                elif len(word) == 1:
+                elif len(word) < 3:
                     bessage.append(word)
                 elif word[0] in 'aeiou':
-                    bessage.append(word)
+                    bessage.append('b' + word)
+                elif word[:2] == 'th':
+                    bessage.append('b' + word[2:])
                 else:
                     bessage.append('b' + word[1:])
             bessage = ' '.join(bessage)
