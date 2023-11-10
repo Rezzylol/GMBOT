@@ -161,12 +161,12 @@ def check_in_user(message):
     now = get_tz_now()
     date_today = now.date()
     with open(FILE_CHECK_INS, 'r+', newline='') as file:
-        reader = csv.reader(file)
         writer = csv.writer(file)
+        writer.writerow([now.isoformat(), username])
+        reader = csv.reader(file)
         check_ins = [row for row in reader]
         for row in check_ins:
             check_in_date = datetime.fromisoformat(row[0]).date()
-        writer.writerow([now.isoformat(), username])
         streak = 0
         last_check_in_date = None
         sorted_check_ins = sorted([row for row in reader if row[1] == username], key=lambda row: row[0])
@@ -341,8 +341,7 @@ def leaderboard(message):
     top_totals = sorted(user_data.items(), key=lambda item: item[1]['total'], reverse=True)[:5]
     streaks_message = "\n".join([f"{idx + 1}. {username} - {data['streak']}" for idx, (username, data) in enumerate(top_streaks)])
     totals_message = "\n".join([f"{idx + 1}. {username} - {data['total']}" for idx, (username, data) in enumerate(top_totals)])
-    reply = f"🏆 streaks:\n{streaks_message}\n\n🏆 check-ins:\n{totals_message}"
-    bot.reply_to(message, reply)
+    bot.reply_to(message, f"🏆 <b>streaks</b>\n{streaks_message}\n\n🏆 <b>check-ins</b>\n{totals_message}", parse_mode='HTML')
 
 def read_credits(user_id):
     with open(FILE_CREDITS, 'r') as file:
