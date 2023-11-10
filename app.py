@@ -31,6 +31,7 @@ GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning te
 MESSAGES_MAX = 100
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
+VOWELS = 'aeiou'
 
 def get_tz_now():
     return datetime.now(TIME_ZONE)
@@ -478,9 +479,9 @@ def handle_all_messages(message):
                     bessage.append(word)
                 elif len(word) < 3:
                     bessage.append(word)
-                elif word[0] in 'aeiou':
+                elif word[0] in VOWELS:
                     bessage.append('b' + word)
-                elif word[:2] == 'th':
+                elif word[0] not in VOWELS and word[1] not in VOWELS:
                     bessage.append('b' + word[2:])
                 else:
                     bessage.append('b' + word[1:])
