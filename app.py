@@ -160,23 +160,23 @@ def check_in_user(message):
     username = message.from_user.username
     now = get_tz_now()
     date_today = now.date()
+    streak = 0
     with open(FILE_CHECK_INS, 'r+', newline='') as file:
+        reader = csv.reader(file)
+        check_ins = sorted((row for row in reader if row[1] == username), key=lambda row: row[0])
+        file.seek(0, 2)
         writer = csv.writer(file)
         writer.writerow([now.isoformat(), username])
-        reader = csv.reader(file)
-        check_ins = [row for row in reader]
-        for row in check_ins:
-            check_in_date = datetime.fromisoformat(row[0]).date()
-        streak = 0
-        last_check_in_date = None
-        sorted_check_ins = sorted([row for row in reader if row[1] == username], key=lambda row: row[0])
-        for row in sorted_check_ins:
-            check_in_date = datetime.fromisoformat(row[0]).date()
-            if last_check_in_date is None or (check_in_date - last_check_in_date).days == 1:
-                streak += 1
-            elif (check_in_date - last_check_in_date).days > 1:
+        for i in range(len(check_ins)-1, -1, -1):
+            check_in_date = datetime.fromisoformat(check_ins[i][0]).date()
+            if i == len(check_ins) - 1:
                 streak = 1
-            last_check_in_date = check_in_date
+            else:
+                if (check_in_date - prev_date).days == 1:
+                    streak += 1
+                elif (check_in_date - prev_date).days > 1:
+                    break
+            prev_date = check_in_date
     bot.reply_to(message, f"good morning, @{username}! you've been checked in for today. <b>{streak} days</b> in a row so far.", parse_mode='HTML')
 
 def ask_math_question(message, attempts=0, sent_message=None):
