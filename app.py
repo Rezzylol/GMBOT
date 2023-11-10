@@ -443,7 +443,7 @@ def rezzy(message):
         log_to_control_chat(f"rezzy")
         bot.reply_to(message, "alright alright thats enough")
     elif 50 <= result <= 60:
-        log_to_control_chat(f"rezzy<=5")
+        log_to_control_chat(f"rezzy\<=5")
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
@@ -472,7 +472,7 @@ def handle_all_messages(message):
         if message_count == BESSAGES or message_count == BESSAGES + 1:
             words = message_lower.split()
             bessage = []
-            for word in words:
+            for word in words: 
                 if emoji.emoji_count(word[0]) > 0:
                     bessage.append(word)
                 elif word in DONT_CONVERT:
@@ -493,6 +493,6 @@ def handle_all_messages(message):
         log_to_control_chat(f"sabre {message.from_user.username}")
         bot.reply_to(message, "thoughts? @SabreDance")
     elif 50 <= result <= 60:
-        log_to_control_chat(f"sabre<=5 {message.from_user.username}")
+        log_to_control_chat(f"sabre\<=5 {message.from_user.username}")
 
 bot.polling()
