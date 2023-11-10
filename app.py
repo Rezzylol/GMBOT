@@ -420,6 +420,7 @@ class RouletteGame:
     def __init__(self):
         self.bets = []
         self.credits = 0
+        self.original_chat_id = None
         self.bet_type = None
         self.bet_value = None
         self.red_numbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
@@ -503,6 +504,7 @@ games = {}
 @bot.message_handler(commands=['roulette'])
 def start_roulette(message):
     games[message.from_user.id] = RouletteGame()
+    games[message.from_user.id].original_chat_id = message.chat.id
     init_credits(message.from_user.id)
     games[message.from_user.id].credits = read_credits(message.from_user.id)
     send_game_menu(message)
@@ -519,7 +521,7 @@ def send_game_menu(message):
     response = f"Credits: {game.credits}\nBets: {bet_list_str}"
 
     bot.send_message(message.from_user.id, response, reply_markup=markup)
-    bot.send_message(message.chat.id, response)
+    bot.send_message(games[message.from_user.id].original_chat_id, response)
 
 @bot.message_handler(func=lambda message: message.text in ["Add Bet", "Spin Wheel"])
 def handle_game_menu_options(message):
@@ -529,7 +531,7 @@ def handle_game_menu_options(message):
         send_bet_types(message)
     elif message.text == "Spin Wheel":
         result, net_gain, total_loss = game.spin_wheel()
-        write_credits(message.from_user.id, self.credits)
+        write_credits(message.from_user.id, games[message.from_user.id].credits)
 
         if result == 0:
             color = 'Green'
@@ -550,7 +552,7 @@ def handle_game_menu_options(message):
             response = f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)"
 
         bot.send_message(message.from_user.id, response)
-        bot.send_message(message.chat.id, response)
+        bot.send_message(games[message.from_user.id].original_chat_id, response)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("roulette_"))
 def handle_query(call):
