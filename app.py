@@ -496,11 +496,11 @@ def handle_all_messages(message):
             bessage = ' '.join(bessage)
             bot.reply_to(message, bessage)
 
-    result = random.randint(1, 1000)
-    if result == 55:
-        log_to_control_chat(f"sabre {message.from_user.username}")
-        bot.reply_to(message, "thoughts? @SabreDance")
-    elif 50 <= result <= 60:
-        log_to_control_chat(f"sabre<=5 {message.from_user.username}", False)
+        result = random.randint(1, 1000)
+        if result == 55:
+            log_to_control_chat(f"sabre {message.from_user.username}")
+            bot.reply_to(message, "thoughts? @SabreDance")
+        elif 50 <= result <= 60:
+            log_to_control_chat(f"sabre<=5 {message.from_user.username}", False)
 
 bot.polling()
