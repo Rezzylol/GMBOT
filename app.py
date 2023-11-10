@@ -531,26 +531,26 @@ def handle_game_menu_options(message):
         result, net_gain, total_loss = game.spin_wheel()
         write_credits(message.from_user.id, self.credits)
 
-    if result == 0:
-        color = 'Green'
-        range_info = 'Zero'
-    else:
-        color = 'Red' if result in games[message.from_user.id].red_numbers else 'Black'
-        odd_even = 'Odd' if result % 2 else 'Even'
-        low_high = 'Low' if 1 <= result <= 18 else 'High'
-        range_info = f"{odd_even}, {low_high}"
+        if result == 0:
+            color = 'Green'
+            range_info = 'Zero'
+        else:
+            color = 'Red' if result in games[message.from_user.id].red_numbers else 'Black'
+            odd_even = 'Odd' if result % 2 else 'Even'
+            low_high = 'Low' if 1 <= result <= 18 else 'High'
+            range_info = f"{odd_even}, {low_high}"
 
-    announcement = f"{color} {result}, {range_info}"
+        announcement = f"{color} {result}, {range_info}"
 
-    if net_gain > 0:
-        response = f"{announcement}\nYou won: {net_gain} credits (Total Bet: {total_loss} credits)"
-    elif net_gain < 0:
-        response = f"{announcement}\nYou lost: {abs(net_gain)} credits (Total Bet: {total_loss} credits)"
-    else:
-        response = f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)"
+        if net_gain > 0:
+            response = f"{announcement}\nYou won: {net_gain} credits (Total Bet: {total_loss} credits)"
+        elif net_gain < 0:
+            response = f"{announcement}\nYou lost: {abs(net_gain)} credits (Total Bet: {total_loss} credits)"
+        else:
+            response = f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)"
 
-    bot.send_message(message.from_user.id, response)
-    bot.send_message(message.chat.id, response)
+        bot.send_message(message.from_user.id, response)
+        bot.send_message(message.chat.id, response)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("roulette_"))
 def handle_query(call):
