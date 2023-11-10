@@ -502,14 +502,13 @@ games = {}
 
 @bot.message_handler(commands=['roulette'])
 def start_roulette(message):
-    user_id = message.from_user.id
-    games[user_id] = RouletteGame()
-    init_credits(user_id)
-    games[user_id].credits = read_credits(user_id)
-    send_game_menu(user_id)
+    games[message.from_user.id] = RouletteGame()
+    init_credits(message.from_user.id)
+    games[message.from_user.id].credits = read_credits(message.from_user.id)
+    send_game_menu(message)
 
-def send_game_menu(user_id):
-    game = games[user_id]
+def send_game_menu(message):
+    game = games[message.from_user.id]
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     markup.add(types.KeyboardButton("Add Bet"), types.KeyboardButton("Spin Wheel"))
 
@@ -517,23 +516,26 @@ def send_game_menu(user_id):
     for i, bet in enumerate(game.bets, 1):
         bet_list_str += f"\n{i}. {bet['type'].title()} - Number(s): {bet['number']}, Amount: {bet['amount']} credits"
 
-    bot.send_message(user_id, f"Credits: {game.credits}\nBets: {bet_list_str}", reply_markup=markup)
+    message = f"Credits: {game.credits}\nBets: {bet_list_str}"
+
+    bot.send_message(message.from_user.id, message, reply_markup=markup)
+    bot.send_message(message.chat.id, message)
 
 @bot.message_handler(func=lambda message: message.text in ["Add Bet", "Spin Wheel"])
 def handle_game_menu_options(message):
-    user_id = message.from_user.id
-    game = games[user_id]
+    game = games[message.from_user.id]
 
     if message.text == "Add Bet":
-        send_bet_types(user_id)
+        send_bet_types(message)
     elif message.text == "Spin Wheel":
         result, net_gain, total_loss = game.spin_wheel()
+        write_credits(message.from_user.id, self.credits)
 
     if result == 0:
         color = 'Green'
         range_info = 'Zero'
     else:
-        color = 'Red' if result in games[user_id].red_numbers else 'Black'
+        color = 'Red' if result in games[message.from_user.id].red_numbers else 'Black'
         odd_even = 'Odd' if result % 2 else 'Even'
         low_high = 'Low' if 1 <= result <= 18 else 'High'
         range_info = f"{odd_even}, {low_high}"
@@ -541,38 +543,38 @@ def handle_game_menu_options(message):
     announcement = f"{color} {result}, {range_info}"
 
     if net_gain > 0:
-        bot.send_message(user_id, f"{announcement}\nYou won: {net_gain} credits (Total Bet: {total_loss} credits)")
+        message = f"{announcement}\nYou won: {net_gain} credits (Total Bet: {total_loss} credits)"
     elif net_gain < 0:
-        bot.send_message(user_id, f"{announcement}\nYou lost: {abs(net_gain)} credits (Total Bet: {total_loss} credits)")
+        message = f"{announcement}\nYou lost: {abs(net_gain)} credits (Total Bet: {total_loss} credits)"
     else:
-        bot.send_message(user_id, f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)")
+        message = f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)"
 
-        send_game_menu(user_id)
+    bot.send_message(message.from_user.id, message)
+    bot.send_message(message.chat.id, message)
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: call.data.startswith("roulette_"))
 def handle_query(call):
-    user_id = call.message.chat.id
-    game = games[user_id]
+    game = games[call.message.from_user.id]
 
-    if call.data.startswith("bet_type_"):
+    if call.data.startswith("roulette_type_"):
         bet_type = call.data.split("_")[-1]
-        ask_bet_value(user_id, bet_type)
-    elif call.data.startswith("bet_value_"):
+        ask_bet_value(message, bet_type)
+    elif call.data.startswith("roulette_value_"):
         data_parts = call.data.split("_")
         bet_type = data_parts[2]
         bet_value = "_".join(data_parts[3:])
         game.bet_type, game.bet_value = bet_type, bet_value
-        bot.send_message(user_id, "Enter the amount of credits you want to bet:")
-    elif call.data.startswith("bet_amount_"):
+        bot.send_message(message.from_user.id, "Enter the amount of credits you want to bet:")
+    elif call.data.startswith("roulette_amount_"):
         bet_type, bet_value, bet_amount = call.data.split("_")[2:]
         bet_amount = int(bet_amount)
         if bet_amount <= 0 or bet_amount > game.credits:
-            bot.send_message(user_id, "Invalid amount. Please enter a valid number of credits.")
+            bot.send_message(message.from_user.id, "Invalid amount. Please enter a valid number of credits.")
             return
         game.add_bet({'type': bet_type, 'number': int(bet_value), 'amount': bet_amount})
-        send_game_menu(user_id)
+        send_game_menu(message.from_user.id)
 
-def send_bet_types(user_id):
+def send_bet_types(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     bet_types = ['Straight', 'Split', 'Street', 'Corner', 'Six Line', 'Dozen', 'Column', 'Red/Black', 'Even/Odd', 'Low/High']
     row_size = 5
@@ -580,70 +582,68 @@ def send_bet_types(user_id):
         row = [types.KeyboardButton(bet_type) for bet_type in bet_types[i:i + row_size]]
         markup.row(*row)
 
-    bot.send_message(user_id, "Select a bet type", reply_markup=markup)
+    bot.send_message(message.chat.id, "Select a bet type", reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text in ['Straight', 'Split', 'Street', 'Corner', 'Six Line', 'Dozen', 'Column', 'Red/Black', 'Even/Odd', 'Low/High'])
 def handle_bet_type_selection(message):
-    user_id = message.from_user.id
     bet_type = message.text.lower().replace("/", "").replace(" ", "")
-    ask_bet_value(user_id, bet_type)
+    ask_bet_value(message, bet_type)
 
-def ask_bet_value(user_id, bet_type):
+def ask_bet_value(message, bet_type):
     markup = types.InlineKeyboardMarkup()
 
     if bet_type == 'straight':
         for i in range(37):
-            markup.add(types.InlineKeyboardButton(str(i), callback_data=f"bet_value_{bet_type}_{i}"))
+            markup.add(types.InlineKeyboardButton(str(i), callback_data=f"roulette_value_{bet_type}_{i}"))
     elif bet_type == 'split':
         for i in range(1, 36):
             if i % 3 != 0:
-                markup.add(types.InlineKeyboardButton(f"{i}/{i+1}", callback_data=f"bet_value_{bet_type}_{i}_{i+1}"))
+                markup.add(types.InlineKeyboardButton(f"{i}/{i+1}", callback_data=f"roulette_value_{bet_type}_{i}_{i+1}"))
             if i < 34:
-                markup.add(types.InlineKeyboardButton(f"{i}/{i+3}", callback_data=f"bet_value_{bet_type}_{i}_{i+3}"))
+                markup.add(types.InlineKeyboardButton(f"{i}/{i+3}", callback_data=f"roulette_value_{bet_type}_{i}_{i+3}"))
     elif bet_type == 'street':
         for i in range(1, 35, 3):
-            markup.add(types.InlineKeyboardButton(f"{i}-{i+2}", callback_data=f"bet_value_{bet_type}_{i}_{i+2}"))
+            markup.add(types.InlineKeyboardButton(f"{i}-{i+2}", callback_data=f"roulette_value_{bet_type}_{i}_{i+2}"))
     elif bet_type == 'corner':
         for i in [1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31, 32, 34]:
-            markup.add(types.InlineKeyboardButton(f"{i}/{i+1}/{i+3}/{i+4}", callback_data=f"bet_value_{bet_type}_{i}_{i+4}"))
+            markup.add(types.InlineKeyboardButton(f"{i}/{i+1}/{i+3}/{i+4}", callback_data=f"roulette_value_{bet_type}_{i}_{i+4}"))
     elif bet_type == 'sixline':
         for i in range(1, 34, 3):
-            markup.add(types.InlineKeyboardButton(f"{i}-{i+5}", callback_data=f"bet_value_{bet_type}_{i}_{i+5}"))
+            markup.add(types.InlineKeyboardButton(f"{i}-{i+5}", callback_data=f"roulette_value_{bet_type}_{i}_{i+5}"))
     elif bet_type == 'dozen':
         for i in range(1, 4):
-            markup.add(types.InlineKeyboardButton(f"Dozen {i}", callback_data=f"bet_value_{bet_type}_{i}"))
+            markup.add(types.InlineKeyboardButton(f"Dozen {i}", callback_data=f"roulette_value_{bet_type}_{i}"))
     elif bet_type == 'column':
         for i in range(1, 4):
-            markup.add(types.InlineKeyboardButton(f"Column {i}", callback_data=f"bet_value_{bet_type}_{i}"))
+            markup.add(types.InlineKeyboardButton(f"Column {i}", callback_data=f"roulette_value_{bet_type}_{i}"))
     elif bet_type == 'redblack':
-        markup.add(types.InlineKeyboardButton("Red", callback_data=f"bet_value_{bet_type}_Red"))
-        markup.add(types.InlineKeyboardButton("Black", callback_data=f"bet_value_{bet_type}_Black"))
+        markup.add(types.InlineKeyboardButton("Red", callback_data=f"roulette_value_{bet_type}_Red"))
+        markup.add(types.InlineKeyboardButton("Black", callback_data=f"roulette_value_{bet_type}_Black"))
     elif bet_type == 'evenodd':
-        markup.add(types.InlineKeyboardButton("Even", callback_data=f"bet_value_{bet_type}_Even"))
-        markup.add(types.InlineKeyboardButton("Odd", callback_data=f"bet_value_{bet_type}_Odd"))
+        markup.add(types.InlineKeyboardButton("Even", callback_data=f"roulette_value_{bet_type}_Even"))
+        markup.add(types.InlineKeyboardButton("Odd", callback_data=f"roulette_value_{bet_type}_Odd"))
     elif bet_type == 'lowhigh':
-        markup.add(types.InlineKeyboardButton("Low (1-18)", callback_data=f"bet_value_{bet_type}_Low"))
-        markup.add(types.InlineKeyboardButton("High (19-36)", callback_data=f"bet_value_{bet_type}_High"))
+        markup.add(types.InlineKeyboardButton("Low (1-18)", callback_data=f"roulette_value_{bet_type}_Low"))
+        markup.add(types.InlineKeyboardButton("High (19-36)", callback_data=f"roulette_value_{bet_type}_High"))
 
-    bot.send_message(user_id, f"Select a value for {bet_type} bet", reply_markup=markup)
+    bot.send_message(message.from_user.id, f"Select a value for {bet_type} bet", reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.text.isdigit(), content_types=['text'])
 def handle_bet_amount(message):
-    user_id = message.from_user.id
-    game = games[user_id]
+    game = games[message.from_user.id]
 
     if game.bet_type is None or game.bet_value is None:
-        bot.send_message(user_id, "Please select a bet type and value first.")
+        bot.send_message(message.from_user.id, "Please select a bet type and value first.")
         return
 
     bet_amount = int(message.text)
     if bet_amount <= 0 or bet_amount > game.credits:
-        bot.send_message(user_id, "Invalid amount. Please enter a valid number of credits.")
+        bot.send_message(message.from_user.id, "Invalid amount. Please enter a valid number of credits.")
         return
 
     game.add_bet({'type': game.bet_type, 'number': game.bet_value, 'amount': bet_amount})
     game.bet_type, game.bet_value = None, None
-    send_game_menu(user_id)
+    send_game_menu(message.from_user.id)
 
 @bot.message_handler(commands=['easteregg'])
 def leaderboard(message):
