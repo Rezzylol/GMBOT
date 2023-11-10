@@ -18,7 +18,6 @@ ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 BESSAGES = 50
 CREDITS_STARTING = 100
-DONT_CONVERT = ["the", "that", "there", "they", "their", "them", "was", "were", "we're", "who", "what", "where", "when", "why", "how", "you", "your", "you're", "youre"]
 URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
@@ -32,6 +31,39 @@ MESSAGES_MAX = 100
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 VOWELS = 'aeiou'
+DONT_CONVERT = [
+    # Pronouns
+    "I", "me", "you", "he", "him", "she", "her", "it", "we", "us", "they", "them",
+    "my", "mine", "your", "yours", "his", "her", "hers", "its", "our", "ours", 
+    "their", "theirs", "this", "that", "these", "those", "who", "whom", "whose", 
+    "which", "what", "where", "when", "why", "how",
+
+    # Prepositions
+    "at", "in", "on", "for", "with", "about", "against", "between", "into", 
+    "through", "during", "before", "after", "above", "below", "to", "from", 
+    "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", 
+    "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", 
+    "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", 
+    "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", 
+    "will", "just", "don", "should", "now",
+
+    # Conjunctions
+    "and", "but", "or", "yet", "so", "for", "nor",
+
+    # Articles
+    "a", "an", "the",
+
+    # Modals
+    "can", "could", "may", "might", "shall", "should", "will", "would", "must",
+
+    # Auxiliaries
+    "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", 
+    "having", "do", "does", "did", "doing",
+
+    # Others
+    "as", "of", "if", "else", "though", "although", "until", "while", "since", 
+    "unless", "because"
+]
 
 def get_tz_now():
     return datetime.now(TIME_ZONE)
@@ -717,8 +749,6 @@ def handle_all_messages(message):
                 if emoji.emoji_count(word[0]) > 0:
                     bessage.append(word)
                 elif word in DONT_CONVERT:
-                    bessage.append(word)
-                elif len(word) < 3:
                     bessage.append(word)
                 elif word[0] in VOWELS:
                     bessage.append('b' + word)
