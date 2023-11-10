@@ -16,7 +16,7 @@ CONTROL_CHAT_ID = '-4070279760'
 MAIN_CHAT_ID = '-1001735412957'
 ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
-BESSAGES = 25
+BESSAGES = 50
 CREDITS_STARTING = 100
 DONT_CONVERT = ["the", "that", "there", "they", "their", "them", "my", "was", "were", "we're", "who", "what", "where", "when", "why", "how"]
 URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
@@ -28,7 +28,7 @@ FILE_MESSAGE_COUNT = '/data/message_count.txt'
 FILE_MESSAGES = '/data/messages.txt'
 FILE_QUOTES = '/data/quotes.txt'
 GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning team|good morningverage|good rawrning)[,.!?]*\s*'
-MESSAGES_MAX = 50
+MESSAGES_MAX = 100
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 
