@@ -516,10 +516,10 @@ def send_game_menu(message):
     for i, bet in enumerate(game.bets, 1):
         bet_list_str += f"\n{i}. {bet['type'].title()} - Number(s): {bet['number']}, Amount: {bet['amount']} credits"
 
-    message = f"Credits: {game.credits}\nBets: {bet_list_str}"
+    response = f"Credits: {game.credits}\nBets: {bet_list_str}"
 
-    bot.send_message(message.from_user.id, message, reply_markup=markup)
-    bot.send_message(message.chat.id, message)
+    bot.send_message(message.from_user.id, response, reply_markup=markup)
+    bot.send_message(message.chat.id, response)
 
 @bot.message_handler(func=lambda message: message.text in ["Add Bet", "Spin Wheel"])
 def handle_game_menu_options(message):
@@ -543,14 +543,14 @@ def handle_game_menu_options(message):
     announcement = f"{color} {result}, {range_info}"
 
     if net_gain > 0:
-        message = f"{announcement}\nYou won: {net_gain} credits (Total Bet: {total_loss} credits)"
+        response = f"{announcement}\nYou won: {net_gain} credits (Total Bet: {total_loss} credits)"
     elif net_gain < 0:
-        message = f"{announcement}\nYou lost: {abs(net_gain)} credits (Total Bet: {total_loss} credits)"
+        response = f"{announcement}\nYou lost: {abs(net_gain)} credits (Total Bet: {total_loss} credits)"
     else:
-        message = f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)"
+        response = f"{announcement}\nNo win or loss (Total Bet: {total_loss} credits)"
 
-    bot.send_message(message.from_user.id, message)
-    bot.send_message(message.chat.id, message)
+    bot.send_message(message.from_user.id, response)
+    bot.send_message(message.chat.id, response)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("roulette_"))
 def handle_query(call):
