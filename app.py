@@ -572,7 +572,7 @@ def handle_query(call):
             bot.send_message(call.from_user.id, "Invalid amount. Please enter a valid number of credits.")
             return
         game.add_bet({'type': bet_type, 'number': int(bet_value), 'amount': bet_amount})
-        send_game_menu(call.from_user.id)
+        send_game_menu(call)
 
 def send_bet_types(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
@@ -643,7 +643,7 @@ def handle_bet_amount(message):
 
     game.add_bet({'type': game.bet_type, 'number': game.bet_value, 'amount': bet_amount})
     game.bet_type, game.bet_value = None, None
-    send_game_menu(message.from_user.id)
+    send_game_menu(message)
 
 @bot.message_handler(commands=['easteregg'])
 def leaderboard(message):
