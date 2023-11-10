@@ -452,7 +452,7 @@ def handle_all_messages(message):
         original_text = message.reply_to_message.text
         parts = message.text.split('/')
         pattern, replacement = parts[1], parts[2]
-        new_text = original_text.replace(pattern, replacement)
+        new_text = re.sub(re.compile(pattern, re.IGNORECASE), replacement, original_text)
         bot.reply_to(message.reply_to_message, new_text)
 
     if str(message.chat.id) == MAIN_CHAT_ID:
