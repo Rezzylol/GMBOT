@@ -499,10 +499,10 @@ games = {}
 @bot.message_handler(commands=['roulette'])
 def start_roulette(message):
     games[message.from_user.id] = RouletteGame()
-    games[message.from_user.id].original_chat_id = message.chat.id
     init_credits(message.from_user.id)
+    games[message.from_user.id].original_chat_id = message.chat.id
     games[message.from_user.id].original_credits = read_credits(message.from_user.id)
-    games[message.from_user.id].credits = read_credits(message.from_user.id)
+    games[message.from_user.id].credits = games[message.from_user.id].original_credits
     send_game_menu(message)
 
 def send_game_menu(message):
@@ -512,7 +512,7 @@ def send_game_menu(message):
 
     bet_list_str = "No bets placed." if not game.bets else ""
     for i, bet in enumerate(game.bets, 1):
-        bet_list_str += f"\n{i}. @{message.from_user.username} on {bet['type'].title()} - {bet['number']} ({bet['amount']} credits)"
+        bet_list_str += f"\n{i}. {bet['type'].title()} - @{message.from_user.username} on {bet['number']} ({bet['amount']} credits)"
 
     response = f"Credits: {game.credits}\nBets: {bet_list_str}"
 
@@ -547,7 +547,7 @@ def handle_game_menu_options(message):
         elif net_gain < 0:
             response = f"{announcement}\n@{message.from_user.username} lost: {abs(net_gain)} credits.\nTotal bet: {total_bet} credits."
         else:
-            response = f"{announcement}\n@{message.from_user.username} neither won nor lost.\nTotal Bet: {total_loss} credits."
+            response = f"{announcement}\n@{message.from_user.username} neither won nor lost.\nTotal Bet: {total_bet} credits."
 
         bot.send_message(message.from_user.id, response)
         bot.send_message(games[message.from_user.id].original_chat_id, response)
