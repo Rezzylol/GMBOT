@@ -177,24 +177,23 @@ def check_in_user(message):
             elif (check_in_date - last_check_in_date).days > 1:
                 streak = 1
             last_check_in_date = check_in_date
-    reply = f"good morning, @{username}! you've been checked in for today. <b>{streak} days</b> in a row so far."
-    bot.reply_to(message, reply)
+    bot.reply_to(message, f"good morning, @{username}! you've been checked in for today. <b>{streak} days</b> in a row so far.", parse_mode='HTML')
 
 def ask_math_question(message, attempts=0, sent_message=None):
     log_to_control_chat(f"ask_math_question {message.from_user.username}")
     username = message.from_user.username
     if attempts == 0:
         question, answer = get_random_math_question()
-        sent_message = bot.reply_to(message, f"What is {question}?")
+        sent_message = bot.reply_to(message, f"what is <b>{question}</b>?", parse_mode='HTML')
     else:
         question, answer = get_random_math_question()
-        bot.reply_to(message, f"Nope. What is {question}?")
+        bot.reply_to(message, f"nope. what is <b>{question}</b>?", parse_mode='HTML')
 
     question_time = datetime.now()
 
     def check_timeout():
         if datetime.now() - question_time >= timedelta(seconds=ATTEMPT_TIMEOUT):
-            bot.edit_message_text(chat_id=message.chat.id, message_id=sent_message.message_id, text=f"see you in <b>7 days</b>!")
+            bot.edit_message_text(chat_id=message.chat.id, message_id=sent_message.message_id, text=f"see you in <b>7 days</b>!", parse_mode='HTML')
             ignore_user(username)
 
     def check_answer(msg):
@@ -207,7 +206,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
         try:
             user_answer = int(msg.text)
         except ValueError:
-            bot.reply_to(msg, "that is <b>not</b> a number. try again.")
+            bot.reply_to(msg, "that is <b>not</b> a number. try again.", parse_mode='HTML')
             return
 
         if user_answer == answer:
@@ -215,7 +214,7 @@ def ask_math_question(message, attempts=0, sent_message=None):
         else:
             attempts += 1
             if attempts >= ATTEMPT_MAX:
-                bot.reply_to(msg, "see you in <b>7 days</b>!")
+                bot.reply_to(msg, "see you in <b>7 days</b>!", parse_mode='HTML')
                 ignore_user(username)
             else:
                 ask_math_question(message, attempts, sent_message)
@@ -248,7 +247,7 @@ def list_handler(message):
     if str(message.chat.id) == CONTROL_CHAT_ID:
         send_paginated_list(file_path, list_name, message, 0)
     else:
-        bot.reply_to(message, "<i>this command can only be used in the control chat.</i>")
+        bot.reply_to(message, "<i>this command can only be used in the control chat.</i>", parse_mode='HTML')
 
 @bot.message_handler(commands=['ignore'])
 def add_ignore(message):
@@ -259,9 +258,9 @@ def add_ignore(message):
         except ValueError:
             log_to_control_chat("provide line numbers separated by commas, e.g. <code>/ignore Keikuris</code>")
         except Exception as e:
-            log_to_control_chat(f"an error occurred: {e}")
+            log_to_control_chat(f"<i>an error occurred</i>\n<code>{e}</code>")
     else:
-        bot.reply_to(message, "<i>this command can only be used in the control chat.</i>")
+        bot.reply_to(message, "<i>this command can only be used in the control chat.</i>", parse_mode='HTML')
 
 @bot.message_handler(commands=['delete', 'unignore'])
 def delete_handler(message):
@@ -278,7 +277,7 @@ def delete_handler(message):
         except Exception as e:
             log_to_control_chat(f"<i>an error occurred: {e}</i>")
     else:
-        bot.reply_to(message, "<i>this command can only be used in the control chat.</i>")
+        bot.reply_to(message, "<i>this command can only be used in the control chat.</i>", parse_mode='HTML')
 
 @bot.message_handler(commands=['debug'])
 def debug_bot(message):
@@ -289,7 +288,7 @@ def check_in(message):
     log_to_control_chat(f"check_in {message.from_user.username}")
     username = message.from_user.username
     if check_ignore_list(username):
-        reply = f"good morning, @{username}! you've been ignored for <b>7 days</b> for failing my test. please try again later."
+        bot.reply_to(message, f"good morning, @{username}! you've been ignored for <b>7 days</b> for failing my test. please try again later.", parse_mode='HTML')
     else:
         log_attempt(username)
         now = get_tz_now()
@@ -313,14 +312,13 @@ def check_in(message):
             else:
                 check_in_user(message)
         elif attempts_today == 69:
-            reply = "nice." # kei's easter egg
+            bot.reply_to(message, "nice.") # kei's easter egg
         else:
-            reply = f"good morning again, @{username}! love the enthusiasm, you've tried to check in, like, {attempts_today} times today now."
-        bot.reply_to(message, reply)
+            bot.reply_to(message, f"good morning again, @{username}! love the enthusiasm, you've tried to check in, like, <b>{attempts_today} times</b> today.", parse_mode='HTML')
 
 @bot.message_handler(func=lambda message: message.text.lower() in ['good night', 'gn'])
 def goodnight(message):
-    bot.reply_to(message, "oh no! don't go to bed! your streak is now 0.")
+    bot.reply_to(message, "oh no! don't go to bed! your streak is now <b>0</b>.", parse_mode='HTML')
 
 @bot.message_handler(commands=['leaderboard'])
 def leaderboard(message):
@@ -406,7 +404,7 @@ def roll_dice(message):
         response = f"oops! you rolled a {result} and lost all your credits. you now have <b>{credits} credits</b>."
 
     write_credits(user_id, credits)
-    bot.reply_to(message, response)
+    bot.reply_to(message, response, parse_mode='HTML')
 
 @bot.message_handler(commands=['easteregg'])
 def leaderboard(message):
@@ -415,7 +413,7 @@ def leaderboard(message):
         reply = random.choice(quotes)
     else:
         reply = "i'm sorry, this command is only available to <b>Telegram Premium</b> users."
-    bot.reply_to(message, reply)
+    bot.reply_to(message, reply, parse_mode='HTML')
 
 @bot.message_handler(commands=['about'])
 def leaderboard(message):
