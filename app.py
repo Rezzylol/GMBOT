@@ -554,11 +554,11 @@ def handle_game_menu_options(message):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("roulette_"))
 def handle_query(call):
-    game = games[call.message.from_user.id]
+    game = games[call.from_user.id]
 
     if call.data.startswith("roulette_type_"):
         bet_type = call.data.split("_")[-1]
-        ask_bet_value(message, bet_type)
+        ask_bet_value(call, bet_type)
     elif call.data.startswith("roulette_value_"):
         data_parts = call.data.split("_")
         bet_type = data_parts[2]
