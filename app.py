@@ -433,7 +433,7 @@ class RouletteGame:
         self.bets.pop(index)
 
     def spin_wheel(self):
-        result = random.randint(0, 36)
+        result = 33 #random.randint(0, 36)
         total_win = 0
         total_bet = sum(bet['amount'] for bet in self.bets)
 
