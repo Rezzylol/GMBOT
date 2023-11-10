@@ -512,9 +512,9 @@ def send_game_menu(message):
 
     bet_list_str = "No bets placed." if not game.bets else ""
     for i, bet in enumerate(game.bets, 1):
-        bet_list_str += f"\n{i}. {bet['type'].title()} - @{message.from_user.username} on {bet['number']} ({bet['amount']} credits)"
+        bet_list_str += f"\n{i}. @{message.from_user.username} put {bet['amount']} credits on {bet['number']}"
 
-    response = f"Credits: {game.credits}\nBets: {bet_list_str}"
+    response = f"Bets: {bet_list_str}"
 
     bot.send_message(message.from_user.id, response, reply_markup=markup)
     bot.send_message(games[message.from_user.id].original_chat_id, response)
