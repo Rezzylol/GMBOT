@@ -448,14 +448,15 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
-    if str(message.chat.id) == MAIN_CHAT_ID:
-        message_lower = message.text.lower()
-
     if message.reply_to_message and message.text.startswith('s/'):
-        _, pattern, replacement = message.text.split('/')
         original_text = message.reply_to_message.text
+        parts = message.text.split('/')
+        pattern, replacement = parts[1], parts[2]
         new_text = original_text.replace(pattern, replacement)
         bot.reply_to(message.reply_to_message, new_text)
+
+    if str(message.chat.id) == MAIN_CHAT_ID:
+        message_lower = message.text.lower()
 
         with open(FILE_MESSAGES, 'a') as file:
             file.write(re.sub(r'\s+', ' ', message_lower) + ' ')
