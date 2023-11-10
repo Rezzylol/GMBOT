@@ -564,15 +564,15 @@ def handle_query(call):
         bet_type = data_parts[2]
         bet_value = "_".join(data_parts[3:])
         game.bet_type, game.bet_value = bet_type, bet_value
-        bot.send_message(message.from_user.id, "Enter the amount of credits you want to bet:")
+        bot.send_message(call.from_user.id, "Enter the amount of credits you want to bet:")
     elif call.data.startswith("roulette_amount_"):
         bet_type, bet_value, bet_amount = call.data.split("_")[2:]
         bet_amount = int(bet_amount)
         if bet_amount <= 0 or bet_amount > game.credits:
-            bot.send_message(message.from_user.id, "Invalid amount. Please enter a valid number of credits.")
+            bot.send_message(call.from_user.id, "Invalid amount. Please enter a valid number of credits.")
             return
         game.add_bet({'type': bet_type, 'number': int(bet_value), 'amount': bet_amount})
-        send_game_menu(message.from_user.id)
+        send_game_menu(call.from_user.id)
 
 def send_bet_types(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
