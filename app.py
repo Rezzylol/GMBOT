@@ -11,7 +11,10 @@ from datetime import datetime, timedelta
 from telebot import TeleBot, types
 
 VERSION = "0.0.1-alpha1 build 5"
-API_KEY = os.getenv('API_KEY')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+CHATGPT_MAX_TOKENS = 4096
+BOT_USERNAME = '@GMBeverageBot'
 CONTROL_CHAT_ID = '-4070279760'
 MAIN_CHAT_ID = '-1001735412957'
 ATTEMPT_MAX = 3
@@ -68,7 +71,7 @@ DONT_CONVERT = [
 def get_tz_now():
     return datetime.now(TIME_ZONE)
 
-bot = TeleBot(API_KEY)
+bot = TeleBot(TELEGRAM_BOT_TOKEN)
 def log_to_control_chat(message, html=True):
     parse_mode = 'HTML' if html else None
     print(f"{get_tz_now().isoformat()} {message}")
@@ -713,6 +716,10 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
+    if BOT_USERNAME in message.text or (message.reply_to_message and message.reply_to_message.from_user.username == BOT_USERNAME):
+        response = chat(OPENAI_API_KEY, message.text.replace(BOT_USERNAME, '').strip(), max_tokens=CHATGPT_MAX_TOKENS)
+        bot.reply_to(message, response)
+
     if message.reply_to_message and message.text.startswith('s/'):
         original_text = message.reply_to_message.text
         parts = message.text.split('/')
