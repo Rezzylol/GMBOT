@@ -12,15 +12,13 @@ from openai import OpenAI
 from telebot import TeleBot, types
 
 VERSION = "0.0.1-alpha1 build 5"
-API_KEY = os.getenv('API_KEY')
-BOT_USERNAME = '@GMBeverageBot'
-CONTROL_CHAT_ID = '-4070279760'
-MAIN_CHAT_ID = '-1001735412957'
 ATTEMPT_MAX = 3
 ATTEMPT_TIMEOUT = 30
 BESSAGES = 50
+BOT_USERNAME = '@GMBeverageBot'
+CHAT_ID_CONTROL = '-4070279760'
+CHAT_ID_MAIN = '-1001735412957'
 CREDITS_STARTING = 100
-URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
 FILE_ATTEMPTS = '/data/attempts.csv'
 FILE_CHECK_INS = '/data/check_ins.csv'
 FILE_CREDITS = '/data/credits.csv'
@@ -30,8 +28,11 @@ FILE_MESSAGES = '/data/messages.txt'
 FILE_QUOTES = '/data/quotes.txt'
 GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning team|good morningverage|good rawrning)[,.!?]*\s*'
 MESSAGES_MAX = 100
+OPENAI_MODEL = "gpt-3.5-turbo"
+OPENAI_TOKENS = 4096
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
+URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
 VOWELS = 'aeiou'
 DONT_CONVERT = [
     # Pronouns
@@ -70,11 +71,11 @@ DONT_CONVERT = [
 def get_tz_now():
     return datetime.now(TIME_ZONE)
 
-bot = TeleBot(API_KEY)
+bot = TeleBot(os.getenv('TOKEN'))
 def log_to_control_chat(message, html=True):
     parse_mode = 'HTML' if html else None
     print(f"{get_tz_now().isoformat()} {message}")
-    bot.send_message(CONTROL_CHAT_ID, f"{message}", parse_mode=parse_mode)
+    bot.send_message(CHAT_ID_CONTROL, f"{message}", parse_mode=parse_mode)
 
 response = requests.get(URL_REPO)
 if response.ok:
@@ -122,7 +123,7 @@ def send_paginated_list(file_path, list_name, message, page_number):
     if page_number < len(paginated_lines) - 1:
         markup.add(types.InlineKeyboardButton("next", callback_data=f"{list_name}_next_{page_number + 1}"))
 
-    bot.send_message(CONTROL_CHAT_ID, response, reply_markup=markup)
+    bot.send_message(CHAT_ID_CONTROL, response, reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: '_prev_' in call.data or '_next_' in call.data)
 def query_paginated(call):
@@ -280,14 +281,14 @@ def list_handler(message):
     list_name = message.text.strip('/').lower()
     file_path = FILE_CHECK_INS if list_name == 'list' else FILE_IGNORE_LIST
 
-    if str(message.chat.id) == CONTROL_CHAT_ID:
+    if str(message.chat.id) == CHAT_ID_CONTROL:
         send_paginated_list(file_path, list_name, message, 0)
     else:
         bot.reply_to(message, "<i>this command can only be used in the control chat.</i>", parse_mode='HTML')
 
 @bot.message_handler(commands=['ignore'])
 def add_ignore(message):
-    if str(message.chat.id) == CONTROL_CHAT_ID:
+    if str(message.chat.id) == CHAT_ID_CONTROL:
         try:
             _, username = message.text.split(' ')
             ignore_user(username)
@@ -302,7 +303,7 @@ def add_ignore(message):
 def delete_handler(message):
     command = message.text.split()[0].lower()
     file_path = FILE_CHECK_INS if command == "/delete" else FILE_IGNORE_LIST
-    if str(message.chat.id) == CONTROL_CHAT_ID:
+    if str(message.chat.id) == CHAT_ID_CONTROL:
         try:
             _, line_numbers = message.text.split(maxsplit=1)
             line_numbers = [int(ln.strip()) for ln in line_numbers.split(',')]
@@ -715,17 +716,25 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text or message.reply_to_message))
 def handle_message(message):
+    log_to_control_chat(f"ai {message.from_user.username}")
     openai = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
 
-    completion  = openai.chat.completions.create(
-        model = "gpt-4",
-        messages = [{"role": "user", "content": prompt}],
-        max_tokens = 4096
-    )
-
-    reply = completion.choices[0].message.content
-    bot.reply_to(message, reply)
+    try:
+        completion = openai.chat.completions.create(
+            model = OPENAI_MODEL,
+            messages = [{"role": "user", "content": prompt}],
+            max_tokens = OPENAI_TOKENS
+        )
+    except openai.APIConnectionError as e:
+        log_to_control_chat(f"ai APIConnectionError: {e.__cause__}")
+    except openai.RateLimitError as e:
+        log_to_control_chat(f"ai RateLimitError")
+    except openai.APIStatusError as e:
+        log_to_control_chat(f"ai APIStatusError: {e.response}")
+    else:
+        reply = completion.choices[0].message.content
+        bot.reply_to(message, reply)
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
@@ -736,7 +745,7 @@ def handle_all_messages(message):
         new_text = re.sub(re.compile(pattern, re.IGNORECASE), replacement, original_text)
         bot.reply_to(message.reply_to_message, new_text)
 
-    if str(message.chat.id) == MAIN_CHAT_ID:
+    if str(message.chat.id) == CHAT_ID_MAIN:
         message_lower = message.text.lower()
 
         with open(FILE_MESSAGES, 'a') as file:
