@@ -181,7 +181,7 @@ def check_ignore_list(username):
         return False
 
 def ignore_user(username):
-    log_to_control_chat(f"ignore_user {username}")
+    log_to_control_chat(f"{username} ignore_user")
     now = get_tz_now().isoformat()
     with open(FILE_IGNORE_LIST, 'a', newline='') as file:
         writer = csv.writer(file)
@@ -194,7 +194,7 @@ def log_attempt(username):
         writer.writerow([now, username])
 
 def check_in_user(message):
-    log_to_control_chat(f"check_in_user {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} check_in_user")
     username = message.from_user.username
     now = get_tz_now()
     date_today = now.date()
@@ -218,7 +218,7 @@ def check_in_user(message):
     bot.reply_to(message, f"good morning, @{username}! you've been checked in for today. <b>{streak} days</b> in a row so far.", parse_mode='HTML')
 
 def ask_math_question(message, attempts=0, sent_message=None):
-    log_to_control_chat(f"ask_math_question {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} ask_math_question")
     username = message.from_user.username
     if attempts == 0:
         question, answer = get_random_math_question()
@@ -323,7 +323,7 @@ def debug_bot(message):
 
 @bot.message_handler(func=lambda message: re.match(GM_REGEX, message.text.lower()))
 def check_in(message):
-    log_to_control_chat(f"check_in {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} check_in")
     username = message.from_user.username
     if check_ignore_list(username):
         bot.reply_to(message, f"good morning, @{username}! you've been ignored for <b>7 days</b> for failing my test. please try again later.", parse_mode='HTML')
@@ -360,7 +360,7 @@ def goodnight(message):
 
 @bot.message_handler(commands=['leaderboard'])
 def leaderboard(message):
-    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
     user_data = defaultdict(lambda: {'streak': 0, 'total': 0, 'last_check_in': None, 'days_checked_in': set()})
     with open(FILE_CHECK_INS, 'r') as file:
         reader = csv.reader(file)
@@ -411,7 +411,7 @@ def write_credits(user_id, credits):
 
 @bot.message_handler(commands=['credits'])
 def credits(message):
-    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
     user_id = message.from_user.id
     init_credits(user_id)
     credits = read_credits(user_id)
@@ -420,7 +420,7 @@ def credits(message):
 
 @bot.message_handler(commands=['diceroll'])
 def roll_dice(message):
-    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
     user_id = message.from_user.id
     init_credits(user_id)
     credits = read_credits(user_id)
@@ -687,7 +687,7 @@ def handle_bet_amount(message):
 
 @bot.message_handler(commands=['easteregg'])
 def leaderboard(message):
-    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
     if message.from_user.is_premium:
         reply = random.choice(quotes)
     else:
@@ -696,7 +696,7 @@ def leaderboard(message):
 
 @bot.message_handler(commands=['about'])
 def leaderboard(message):
-    log_to_control_chat(f"{message.text} {message.from_user.username}")
+    log_to_control_chat(f"{message.from_user.username} {message.text}")
     reply = (
         f"<b>gmbot</b> <code>{VERSION}</code>\n"
         f"\n"
@@ -717,16 +717,18 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text or message.reply_to_message))
 def handle_message(message):
-    log_to_control_chat(f"ai {message.from_user.username}")
     openai = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
     prompt_tokens = len(tiktoken.encoding_for_model(OPENAI_MODEL).encode(prompt))
+    max_tokens = OPENAI_MAX_TOKENS - prompt_tokens
+
+    log_to_control_chat(f"{message.from_user.username} ai model={OPENAI_MODEL}, prompt_tokens={prompt_tokens}, max_tokens={max_tokens}")
 
     try:
         completion = openai.chat.completions.create(
             model = OPENAI_MODEL,
             messages = [{"role": "user", "content": prompt}],
-            max_tokens = OPENAI_MAX_TOKENS - prompt_tokens
+            max_tokens = max_tokens
         )
     except openai.APIConnectionError as e:
         log_to_control_chat(f"ai APIConnectionError: {e.__cause__}")
@@ -790,9 +792,9 @@ def handle_all_messages(message):
 
         result = random.randint(1, 1000)
         if result == 55:
-            log_to_control_chat(f"sabre {message.from_user.username}")
+            log_to_control_chat(f"{message.from_user.username} sabre")
             bot.reply_to(message, "thoughts? @SabreDance")
         elif 50 <= result <= 60:
-            log_to_control_chat(f"sabre<=5 {message.from_user.username}", False)
+            log_to_control_chat(f"{message.from_user.username} sabre<=5", False)
 
 bot.polling()
