@@ -719,7 +719,7 @@ def rezzy(message):
 def handle_message(message):
     openai = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
-    prompt_tokens = len(tiktoken.encoding_for_model(OPENAI_MODEL).encode(prompt))
+    prompt_tokens = len(tiktoken.encoding_for_model(OPENAI_MODEL).encode(prompt)) + 7
     max_tokens = OPENAI_MAX_TOKENS - prompt_tokens
 
     log_to_control_chat(f"{message.from_user.username} ai model={OPENAI_MODEL}, prompt_tokens={prompt_tokens}, max_tokens={max_tokens}")
