@@ -51,7 +51,8 @@ OPENAI_SYSTEM_PROMPT = (
     "* All numerical HTML entities are supported.\n"
     "* The API currently supports only the following named HTML entities: &lt;, &gt;, &amp; and &quot;.\n"
     "* Use nested pre and code tags, to define programming language for pre entity.\n"
-    "* Programming language can't be specified for standalone code tags."
+    "* Programming language can't be specified for standalone code tags.\n"
+    "Don't use formatting just for the sake of it, only use it if required as part of a request."
 )
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
