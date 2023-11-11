@@ -32,6 +32,18 @@ GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning te
 MESSAGES_MAX = 100
 OPENAI_MODEL = "gpt-4-1106-preview"
 OPENAI_MAX_TOKENS = 4096
+OPENAI_SYSTEM_PROMPT = (
+    "You are a helpful assistant.\n"
+    "If you need to address me, my name is @{message.from_user.username}.\n"
+    "Your response must be no longer than 4096 characters.\n"
+    "Your response will be parsed in Telegram MarkdownV2, therefore the following formatting rules must be applied to your response:\n"
+    "- Any character with code between 1 and 126 inclusively can be escaped anywhere with a preceding '\\' character, in which case it is treated as an ordinary character and not a part of the markup. This implies that the '\\' character usually must be escaped with a preceding '\\' character.\n"
+    "- Inside pre and code entities, all '`' and '\\' characters must be escaped with a preceding '\\' character.\n"
+    "- Inside the (...) part of all inline links, all ')' and '\\' must be escaped with a preceding '\\' character.\n"
+    "- In all other places characters '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' must be escaped with the preceding character '\\'.\n"
+    "- In case of ambiguity between italic and underline entities __ is always greadily treated from left to right as beginning or end of underline entity, so instead of ___italic underline___ use ___italic underline_\\r__, where \\r is a character with code 13, which will be ignored.\n"
+    "- Custom emoji entities cannot be used."
+)
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
@@ -730,7 +742,7 @@ def handle_message(message):
         completion = client.chat.completions.create(
             model = OPENAI_MODEL,
             messages = [
-                {"role": "system", "content": f"You are a helpful assistant.\nWrite a succinct response.\nMy name is @{message.from_user.username} if you need to address me.\nThe response must be 4096 characters or less.\nThe response will be parsed in Telegram MarkdownV2, therefore:\nAny character with code between 1 and 126 inclusively can be escaped anywhere with a preceding '\\' character, in which case it is treated as an ordinary character and not a part of the markup. This implies that '\\' character usually must be escaped with a preceding '\\' character.\nInside pre and code entities, all '`' and '\\' characters must be escaped with a preceding '\\' character.\nInside the (...) part of an inline link and custom emoji definition, all ')' and '\\' must be escaped with a preceding '\\' character.\nIn all other places characters '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' must be escaped with the preceding character '\\'.\nIn case of ambiguity between italic and underline entities __ is always greadily treated from left to right as beginning or end of underline entity, so instead of ___italic underline___ use ___italic underline_\\r__, where \\r is a character with code 13, which will be ignored."},
+                {"role": "system", "content": OPENAI_SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}
             ],
             max_tokens = max_tokens
