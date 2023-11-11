@@ -6,6 +6,7 @@ import random
 import re
 import requests
 import threading
+import tiktoken
 from collections import defaultdict
 from datetime import datetime, timedelta
 from openai import OpenAI
@@ -29,7 +30,7 @@ FILE_QUOTES = '/data/quotes.txt'
 GM_REGEX = r'^(gm|gm beverage|good morning|good morning beverage|good morning team|good morningverage|good rawrning)[,.!?]*\s*'
 MESSAGES_MAX = 100
 OPENAI_MODEL = "gpt-3.5-turbo"
-OPENAI_TOKENS = 4096
+OPENAI_MAX_TOKENS = 4096
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
 URL_REPO = 'https://api.github.com/repos/Rezzylol/GMBOT/commits/main'
@@ -719,12 +720,13 @@ def handle_message(message):
     log_to_control_chat(f"ai {message.from_user.username}")
     openai = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
+    prompt_tokens = len(tiktoken.encoding_for_model(OPENAI_MODEL).encode(prompt))
 
     try:
         completion = openai.chat.completions.create(
             model = OPENAI_MODEL,
             messages = [{"role": "user", "content": prompt}],
-            max_tokens = OPENAI_TOKENS
+            max_tokens = OPENAI_MAX_TOKENS - prompt_tokens
         )
     except openai.APIConnectionError as e:
         log_to_control_chat(f"ai APIConnectionError: {e.__cause__}")
