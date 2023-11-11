@@ -754,7 +754,7 @@ def handle_all_messages(message):
         parts = message.text.split('/')
         pattern, replacement = parts[1], parts[2]
         new_text = re.sub(re.compile(pattern, re.IGNORECASE), replacement, original_text)
-        bot.reply_to(message.reply_to_message, new_text)
+        bot.reply_to(message.reply_to_message, new_text[4096:])
 
     if str(message.chat.id) == CHAT_ID_MAIN:
         message_lower = message.text.lower()
