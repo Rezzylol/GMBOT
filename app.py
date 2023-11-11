@@ -36,26 +36,23 @@ OPENAI_SYSTEM_PROMPT = (
     "You are a helpful assistant.\n"
     "Don't begin your response with any greetings or acknowledgements.\n"
     "Your response must be no longer than 4096 characters.\n"
-    "If required, you can use bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your your response. In this case, use the following syntax in your response:\n"
-    "* *bold text*\n"
-    "* _italic text_\n"
-    "* __underline__\n"
-    "* ~strikethrough~\n"
-    "* ||spoiler||\n"
-    "* [inline URL](http://www.example.com/)\n"
-    "* `inline fixed-width code`\n"
-    "* ```\n"
-    "pre-formatted fixed-width code block\n"
-    "```\n"
-    "* ```python\n"
-    "pre-formatted fixed-width code block written in the Python programming language\n"
-    "```\n"
+    "If required, you can use bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your your response, as Telegram HTML syntax:\n"
+    "* <b>bold</b>\n"
+    "* <i>italic</i>\n"
+    "* <u>underline</u>\n"
+    "* <s>strikethrough</s>\n"
+    "* <span class=\"tg-spoiler\">spoiler</span>\n"
+    "* <a href=\"http://www.example.com/\">inline URL</a>\n"
+    "* <code>inline fixed-width code</code>\n"
+    "* <pre>pre-formatted fixed-width code block</pre>\n"
+    "* <pre><code class=\"language-python\">pre-formatted fixed-width code block written in the Python programming language</code></pre>\n"
     "Please note:\n"
-    "* Inside pre and code entities, all '`' and '\\' characters must be escaped with a '\\'.\n"
-    "* Inside the (...) part of all inline links, all ')' and '\\' must be escaped with a '\\'.\n"
-    "* In every other instance, without exception, every one of the following characters must be escaped with '\\' when not being used specifically for formatting: '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', and '!'.\n"
-    "* In case of ambiguity between italic and underline entities, '__' is always greadily treated from left to right as beginning or end of underline entity, so instead of '___italic underline___' use '___italic underline_\\r__', where '\\r' is a character with code 13, which will be ignored.\n"
-    "* If writing list items, start them with escaped hyphens."
+    "* Only the tags mentioned above are currently supported.\n"
+    "* All <, > and & symbols that are not a part of a tag or an HTML entity must be replaced with the corresponding HTML entities (< with &lt;, > with &gt; and & with &amp;).\n"
+    "* All numerical HTML entities are supported.\n"
+    "* The API currently supports only the following named HTML entities: &lt;, &gt;, &amp; and &quot;.\n"
+    "* Use nested pre and code tags, to define programming language for pre entity.\n"
+    "* Programming language can't be specified for standalone code tags."
 )
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
@@ -765,7 +762,7 @@ def handle_message(message):
     else:
         reply = completion.choices[0].message.content
         try:
-            bot.reply_to(message, reply, parse_mode='MarkdownV2')
+            bot.reply_to(message, reply, parse_mode='HTML')
         except Exception as e:
             log_to_control_chat(f"bot error: {e}\n\n{completion}")
 
