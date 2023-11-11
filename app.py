@@ -746,16 +746,18 @@ def handle_message(message):
             ],
             max_tokens = max_tokens
         )
-    except client.error.RateLimitError as e:
-        log_to_control_chat(f"ai error: Rate limit exceeded: {e}")
-    except client.error.InvalidRequestError as e:
-        log_to_control_chat(f"ai error: Invalid request: {e}")
-    except client.error.AuthenticationError as e:
-        log_to_control_chat(f"ai error: Authentication problem: {e}")
-    except client.error.APIConnectionError as e:
+    except client.APIConnectionError as e:
         log_to_control_chat(f"ai error: Network communication error with the API: {e}")
-    except client.error.OpenAIError as e:
+    except client.AuthenticationError as e:
+        log_to_control_chat(f"ai error: Authentication problem: {e}")
+    except client.BadRequestError as e:
+        log_to_control_chat(f"ai error: Bad request: {e}")
+    except client.InvalidRequestError as e:
+        log_to_control_chat(f"ai error: Invalid request: {e}")
+    except client.OpenAIError as e:
         log_to_control_chat(f"ai error: An error occurred while calling the API: {e}")
+    except client.RateLimitError as e:
+        log_to_control_chat(f"ai error: Rate limit exceeded: {e}")
     except Exception as e:
         log_to_control_chat(f"ai error: An unexpected error occurred: {e}")
     else:
