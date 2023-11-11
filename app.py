@@ -730,7 +730,7 @@ def handle_message(message):
         completion = client.chat.completions.create(
             model = OPENAI_MODEL,
             messages = [
-                {"role": "system", "content": f"You are a helpful assistant. Write a succinct response. The response must be 4096 characters or less. My name is @{message.from_user.username} if you need to address me."},
+                {"role": "system", "content": f"You are a helpful assistant. Write a succinct response. The response must be 4096 characters or less. My name is @{message.from_user.username} if you need to address me. The output will use Telegram's parse_mode='MarkdownV2', so escape any characters not intended to be used for Markdown formatting."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens = max_tokens
