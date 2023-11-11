@@ -8,12 +8,11 @@ import requests
 import threading
 from collections import defaultdict
 from datetime import datetime, timedelta
-from openai import ChatCompletion, OpenAI
+from openai import OpenAI
 from telebot import TeleBot, types
 
 VERSION = "0.0.1-alpha1 build 5"
 API_KEY = os.getenv('API_KEY')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 BOT_USERNAME = '@GMBeverageBot'
 CONTROL_CHAT_ID = '-4070279760'
 MAIN_CHAT_ID = '-1001735412957'
@@ -716,17 +715,16 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text or message.reply_to_message))
 def handle_message(message):
-    openai = OpenAI(api_key=OPENAI_API_KEY)
-
+    openai = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4.0-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=4096
+    completion  = openai.chat.completions.create(
+        model = "gpt-4",
+        messages = [{"role": "user", "content": prompt}],
+        max_tokens = 4096
     )
 
-    reply = response['choices'][0]['message']['content'].strip()
+    reply = completion.choices[0].message.content
     bot.reply_to(message, reply)
 
 @bot.message_handler(func=lambda m: True)
