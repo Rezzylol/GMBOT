@@ -39,17 +39,17 @@ VOWELS = 'aeiou'
 DONT_CONVERT = [
     # Pronouns
     "I", "me", "you", "he", "him", "she", "her", "it", "we", "us", "they", "them",
-    "my", "mine", "your", "yours", "his", "her", "hers", "its", "our", "ours", 
-    "their", "theirs", "this", "that", "these", "those", "who", "whom", "whose", 
+    "my", "mine", "your", "yours", "his", "her", "hers", "its", "our", "ours",
+    "their", "theirs", "this", "that", "these", "those", "who", "whom", "whose",
     "which", "what", "where", "when", "why", "how",
 
     # Prepositions
-    "at", "in", "on", "for", "with", "about", "against", "between", "into", 
-    "through", "during", "before", "after", "above", "below", "to", "from", 
-    "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", 
-    "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", 
-    "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", 
-    "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", 
+    "at", "in", "on", "for", "with", "about", "against", "between", "into",
+    "through", "during", "before", "after", "above", "below", "to", "from",
+    "up", "down", "in", "out", "on", "off", "over", "under", "again", "further",
+    "then", "once", "here", "there", "when", "where", "why", "how", "all", "any",
+    "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor",
+    "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can",
     "will", "just", "don", "should", "now",
 
     # Conjunctions
@@ -62,11 +62,11 @@ DONT_CONVERT = [
     "can", "could", "may", "might", "shall", "should", "will", "would", "must",
 
     # Auxiliaries
-    "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", 
+    "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had",
     "having", "do", "does", "did", "doing",
 
     # Others
-    "as", "of", "if", "else", "though", "although", "until", "while", "since", 
+    "as", "of", "if", "else", "though", "although", "until", "while", "since",
     "unless", "because"
 ]
 CONTRACTION_ENDINGS = ["n't", "'s", "'ll", "'d", "'re", "'ve", "'m"]
@@ -730,7 +730,7 @@ def handle_message(message):
         completion = client.chat.completions.create(
             model = OPENAI_MODEL,
             messages = [
-                {"role": "system", "content": f"You are a helpful assistant. Write a succinct response. The response must be 4096 characters or less. My name is @{message.from_user.username} if you need to address me. The output will use Telegram's parse_mode='MarkdownV2', so escape any characters not intended to be used for Markdown formatting."},
+                {"role": "system", "content": f"You are a helpful assistant.\nWrite a succinct response.\nMy name is @{message.from_user.username} if you need to address me.\nThe response must be 4096 characters or less.\nThe response will be parsed in Telegram MarkdownV2, therefore:\nAny character with code between 1 and 126 inclusively can be escaped anywhere with a preceding '\\' character, in which case it is treated as an ordinary character and not a part of the markup. This implies that '\\' character usually must be escaped with a preceding '\\' character.\nInside pre and code entities, all '`' and '\\' characters must be escaped with a preceding '\\' character.\nInside the (...) part of an inline link and custom emoji definition, all ')' and '\\' must be escaped with a preceding '\\' character.\nIn all other places characters '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' must be escaped with the preceding character '\\'.\nIn case of ambiguity between italic and underline entities __ is always greadily treated from left to right as beginning or end of underline entity, so instead of ___italic underline___ use ___italic underline_\\r__, where \\r is a character with code 13, which will be ignored."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens = max_tokens
