@@ -34,6 +34,7 @@ OPENAI_MODEL = "gpt-4-1106-preview"
 OPENAI_MAX_TOKENS = 4096
 OPENAI_SYSTEM_PROMPT = (
     "You are a helpful assistant.\n"
+    "Don't begin your response with any greetings or acknowledgements.\n"
     "Your response must be no longer than 4096 characters.\n"
     "You can use bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your your response, using Markdown, with the following requirements:\n"
     "- Any character with code between 1 and 126 inclusively can be escaped anywhere with a preceding '\\' character, in which case it is treated as an ordinary character and not a part of the markup. This implies that the '\\' character usually must be escaped with a preceding '\\' character.\n"
