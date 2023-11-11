@@ -7,7 +7,6 @@ import re
 import requests
 import threading
 import tiktoken
-import traceback
 from collections import defaultdict
 from datetime import datetime, timedelta
 from openai import OpenAI
@@ -36,7 +35,7 @@ OPENAI_SYSTEM_PROMPT = (
     "You are a helpful assistant.\n"
     "Don't begin your response with any greetings or acknowledgements.\n"
     "Your response must be no longer than 4096 characters.\n"
-    "If required, you can use bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your your response, as Telegram HTML syntax:\n"
+    "If you intend to use formatting, you must format bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your response as Telegram HTML syntax instead of Markdown:\n"
     "* <b>bold</b>\n"
     "* <i>italic</i>\n"
     "* <u>underline</u>\n"
