@@ -719,7 +719,7 @@ def rezzy(message):
 
 @bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text))
 def handle_message(message):
-    openai = OpenAI()
+    client = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
     prompt_tokens = len(tiktoken.encoding_for_model(OPENAI_MODEL).encode(prompt)) + 7
     max_tokens = OPENAI_MAX_TOKENS - prompt_tokens
@@ -727,20 +727,23 @@ def handle_message(message):
     log_to_control_chat(f"{message.from_user.username} ai model={OPENAI_MODEL}, prompt_tokens={prompt_tokens}, max_tokens={max_tokens}")
 
     try:
-        completion = openai.chat.completions.create(
+        completion = client.chat.completions.create(
             model = OPENAI_MODEL,
-            messages = [{"role": "user", "content": prompt}],
+            messages = [
+                {"role": "system", "content": "You are a helpful assistant. Write a succinct response. The response must be 4096 characters or less. My name is @{message.from_user.username} if you need to address me."},
+                {"role": "user", "content": prompt}
+            ],
             max_tokens = max_tokens
         )
-    except openai.error.RateLimitError as e:
+    except client.error.RateLimitError as e:
         log_to_control_chat(f"ai error: Rate limit exceeded: {e}")
-    except openai.error.InvalidRequestError as e:
+    except client.error.InvalidRequestError as e:
         log_to_control_chat(f"ai error: Invalid request: {e}")
-    except openai.error.AuthenticationError as e:
+    except client.error.AuthenticationError as e:
         log_to_control_chat(f"ai error: Authentication problem: {e}")
-    except openai.error.APIConnectionError as e:
+    except client.error.APIConnectionError as e:
         log_to_control_chat(f"ai error: Network communication error with the API: {e}")
-    except openai.error.OpenAIError as e:
+    except client.error.OpenAIError as e:
         log_to_control_chat(f"ai error: An error occurred while calling the API: {e}")
     except Exception as e:
         log_to_control_chat(f"ai error: An unexpected error occurred: {e}")
