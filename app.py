@@ -34,7 +34,6 @@ OPENAI_MODEL = "gpt-4-1106-preview"
 OPENAI_MAX_TOKENS = 4096
 OPENAI_SYSTEM_PROMPT = (
     "You are a helpful assistant.\n"
-    "If you need to address me, my name is @{message.from_user.username}.\n"
     "Your response must be no longer than 4096 characters.\n"
     "You can use bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your your response, using Markdown, with the following requirements:\n"
     "- Any character with code between 1 and 126 inclusively can be escaped anywhere with a preceding '\\' character, in which case it is treated as an ordinary character and not a part of the markup. This implies that the '\\' character usually must be escaped with a preceding '\\' character.\n"
@@ -742,7 +741,7 @@ def handle_message(message):
         completion = client.chat.completions.create(
             model = OPENAI_MODEL,
             messages = [
-                {"role": "system", "content": OPENAI_SYSTEM_PROMPT},
+                {"role": "system", "content": (f"If you need to address me, my name is @{message.from_user.username}.\n", OPENAI_SYSTEM_PROMPT)},
                 {"role": "user", "content": prompt}
             ],
             max_tokens = max_tokens
@@ -761,8 +760,10 @@ def handle_message(message):
         log_to_control_chat(f"ai error: An unexpected error occurred: {e}")
     else:
         reply = completion.choices[0].message.content
-        print(reply)
-        bot.reply_to(message, reply, parse_mode='MarkdownV2')
+        try:
+            bot.reply_to(message, reply[4096:], parse_mode='MarkdownV2')
+        except Exception as e:
+            log_to_control_chat(f"bot error: {e}\n\n{reply}"[4096:])
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
