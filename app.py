@@ -7,6 +7,7 @@ import re
 import requests
 import threading
 import tiktoken
+import traceback
 from collections import defaultdict
 from datetime import datetime, timedelta
 from openai import OpenAI
@@ -730,14 +731,18 @@ def handle_message(message):
             messages = [{"role": "user", "content": prompt}],
             max_tokens = max_tokens
         )
-    except openai.APIConnectionError as e:
-        log_to_control_chat(f"ai APIConnectionError: {e.__cause__}")
-    except openai.APIStatusError as e:
-        log_to_control_chat(f"ai APIStatusError: {e.response}")
-    except openai.BadRequestError as e:
-        log_to_control_chat(f"ai BadRequestError: {e.response}")
-    except openai.RateLimitError as e:
-        log_to_control_chat(f"ai RateLimitError")
+    except openai.error.RateLimitError as e:
+        log_to_control_chat(f"ai error: Rate limit exceeded: {e}")
+    except openai.error.InvalidRequestError as e:
+        log_to_control_chat(f"ai error: Invalid request: {e}")
+    except openai.error.AuthenticationError as e:
+        log_to_control_chat(f"ai error: Authentication problem: {e}")
+    except openai.error.APIConnectionError as e:
+        log_to_control_chat(f"ai error: Network communication error with the API: {e}")
+    except openai.error.OpenAIError as e:
+        log_to_control_chat(f"ai error: An error occurred while calling the API: {e}")
+    except Exception as e:
+        log_to_control_chat(f"ai error: An unexpected error occurred: {e}")
     else:
         reply = completion.choices[0].message.content
         bot.reply_to(message, reply)
