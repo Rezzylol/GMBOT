@@ -715,7 +715,7 @@ def rezzy(message):
     elif 50 <= result <= 60:
         log_to_control_chat(f"rezzy<=5", False)
 
-@bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text or message.reply_to_message))
+@bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text))
 def handle_message(message):
     openai = OpenAI()
     prompt = message.text.replace(BOT_USERNAME, '').strip()
