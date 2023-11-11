@@ -58,7 +58,7 @@ OPENAI_SYSTEM_PROMPT = (
     "- In all other places characters '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!' must be escaped with the preceding character '\\'.\n"
     "- In case of ambiguity between italic and underline entities __ is always greadily treated from left to right as beginning or end of underline entity, so instead of ___italic underline___ use ___italic underline_\\r__, where \\r is a character with code 13, which will be ignored.\n"
     "- Custom emoji entities cannot be used.\n"
-    "- If writing list items with asterisks or hyphens, they must be escaped."
+    "- If writing list items, start them with escaped hyphens."
 )
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
