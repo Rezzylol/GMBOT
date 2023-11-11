@@ -35,7 +35,8 @@ OPENAI_SYSTEM_PROMPT = (
     "You are a helpful assistant.\n"
     "Don't begin your response with any greetings or acknowledgements.\n"
     "Your response must be no longer than 4096 characters.\n"
-    "If you intend to use formatting, you must format bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your response as Telegram HTML syntax instead of Markdown:\n"
+    "If you intend to use formatting, you must format bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your response as Telegram HTML syntax instead of Markdown.\n"
+    "Some examples:\n"
     "* <b>bold</b>\n"
     "* <i>italic</i>\n"
     "* <u>underline</u>\n"
@@ -46,13 +47,13 @@ OPENAI_SYSTEM_PROMPT = (
     "* <pre>pre-formatted fixed-width code block</pre>\n"
     "* <pre><code class=\"language-python\">pre-formatted fixed-width code block written in the Python programming language</code></pre>\n"
     "Please note:\n"
+    "* Don't use formatting just for the sake of it, only use it if required as part of a request.\n"
     "* Only the tags mentioned above are currently supported.\n"
     "* All <, > and & symbols that are not a part of a tag or an HTML entity must be replaced with the corresponding HTML entities (< with &lt;, > with &gt; and & with &amp;).\n"
     "* All numerical HTML entities are supported.\n"
     "* The API currently supports only the following named HTML entities: &lt;, &gt;, &amp; and &quot;.\n"
     "* Use nested pre and code tags, to define programming language for pre entity.\n"
-    "* Programming language can't be specified for standalone code tags.\n"
-    "Don't use formatting just for the sake of it, only use it if required as part of a request."
+    "* Programming language can't be specified for standalone code tags."
 )
 PAGE_SIZE = 10
 TIME_ZONE = pytz.timezone('Pacific/Auckland')
@@ -762,7 +763,7 @@ def handle_message(message):
     else:
         reply = completion.choices[0].message.content
         try:
-            bot.reply_to(message, reply, parse_mode='HTML')
+            bot.reply_to(message, reply[:4096], parse_mode='HTML')
         except Exception as e:
             log_to_control_chat(f"bot error: {e}\n\n{completion}")
 
@@ -773,7 +774,7 @@ def handle_all_messages(message):
         parts = message.text.split('/')
         pattern, replacement = parts[1], parts[2]
         new_text = re.sub(re.compile(pattern, re.IGNORECASE), replacement, original_text)
-        bot.reply_to(message.reply_to_message, new_text)
+        bot.reply_to(message.reply_to_message, new_text[:4096])
 
     if str(message.chat.id) == CHAT_ID_MAIN:
         message_lower = message.text.lower()
