@@ -69,6 +69,7 @@ DONT_CONVERT = [
     "as", "of", "if", "else", "though", "although", "until", "while", "since", 
     "unless", "because"
 ]
+CONTRACTION_ENDINGS = ["n't", "'s", "'ll", "'d", "'re", "'ve", "'m"]
 
 def get_tz_now():
     return datetime.now(TIME_ZONE)
@@ -790,6 +791,8 @@ def handle_all_messages(message):
                     bessage.append('b' + word)
                 elif word[0] not in VOWELS and word[1] not in VOWELS:
                     bessage.append('b' + word[2:])
+                elif any(word.endswith(ending) for ending in CONTRACTION_ENDINGS):
+                    bessage.append(word)
                 else:
                     bessage.append('b' + word[1:])
             bessage = ' '.join(bessage)
