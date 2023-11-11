@@ -761,6 +761,7 @@ def handle_message(message):
         log_to_control_chat(f"ai error: An unexpected error occurred: {e}")
     else:
         reply = completion.choices[0].message.content
+        print(reply)
         bot.reply_to(message, reply, parse_mode='MarkdownV2')
 
 @bot.message_handler(func=lambda m: True)
