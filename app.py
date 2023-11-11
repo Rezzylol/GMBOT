@@ -36,7 +36,7 @@ OPENAI_SYSTEM_PROMPT = (
     "You are a helpful assistant.\n"
     "If you need to address me, my name is @{message.from_user.username}.\n"
     "Your response must be no longer than 4096 characters.\n"
-    "Your response will be parsed in Telegram MarkdownV2, therefore the following formatting rules must be applied to your response:\n"
+    "You can use bold, italic, underlined, strikethrough, and spoiler text, as well as inline links and pre-formatted code in your your response, using Markdown, with the following requirements:\n"
     "- Any character with code between 1 and 126 inclusively can be escaped anywhere with a preceding '\\' character, in which case it is treated as an ordinary character and not a part of the markup. This implies that the '\\' character usually must be escaped with a preceding '\\' character.\n"
     "- Inside pre and code entities, all '`' and '\\' characters must be escaped with a preceding '\\' character.\n"
     "- Inside the (...) part of all inline links, all ')' and '\\' must be escaped with a preceding '\\' character.\n"
