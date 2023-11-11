@@ -751,9 +751,9 @@ def handle_message(message):
     else:
         reply = completion.choices[0].message.content
         try:
-            bot.reply_to(message, reply[4096:], parse_mode='MarkdownV2')
+            bot.reply_to(message, reply, parse_mode='MarkdownV2')
         except Exception as e:
-            log_to_control_chat(f"bot error: {e}\n\n{reply}"[4096:])
+            log_to_control_chat(f"bot error: {e}\n\n{completion}")
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
@@ -762,7 +762,7 @@ def handle_all_messages(message):
         parts = message.text.split('/')
         pattern, replacement = parts[1], parts[2]
         new_text = re.sub(re.compile(pattern, re.IGNORECASE), replacement, original_text)
-        bot.reply_to(message.reply_to_message, new_text[4096:])
+        bot.reply_to(message.reply_to_message, new_text)
 
     if str(message.chat.id) == CHAT_ID_MAIN:
         message_lower = message.text.lower()
