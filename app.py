@@ -54,7 +54,7 @@ OPENAI_SYSTEM_PROMPT = (
     "* Any character with code between 1 and 126 inclusively can be escaped anywhere with a '\\', in which case it is treated as an ordinary character and not a part of the markup.\n"
     "* Inside pre and code entities, all '`' and '\\' characters must be escaped with a '\\'.\n"
     "* Inside the (...) part of all inline links, all ')' and '\\' must be escaped with a '\\'.\n"
-    "* Due to the syntax of the formatting above, the following characters must be escaped with '\\' when not being used specifically for formatting: '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', and '!'.\n"
+    "* In every instance, without exception, the following characters must be escaped with '\\' when not being used specifically for formatting: '_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', and '!'.\n"
     "* In case of ambiguity between italic and underline entities, '__' is always greadily treated from left to right as beginning or end of underline entity, so instead of '___italic underline___' use '___italic underline_\\r__', where '\\r' is a character with code 13, which will be ignored.\n"
     "* If writing list items, start them with escaped hyphens."
 )
