@@ -8,10 +8,13 @@ import requests
 import threading
 from collections import defaultdict
 from datetime import datetime, timedelta
+from openai import ChatCompletion, OpenAI
 from telebot import TeleBot, types
 
 VERSION = "0.0.1-alpha1 build 5"
 API_KEY = os.getenv('API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+BOT_USERNAME = '@GMBeverageBot'
 CONTROL_CHAT_ID = '-4070279760'
 MAIN_CHAT_ID = '-1001735412957'
 ATTEMPT_MAX = 3
@@ -710,6 +713,21 @@ def rezzy(message):
         bot.reply_to(message, "alright alright thats enough")
     elif 50 <= result <= 60:
         log_to_control_chat(f"rezzy<=5", False)
+
+@bot.message_handler(func=lambda message: message.text and (BOT_USERNAME in message.text or message.reply_to_message))
+def handle_message(message):
+    openai = OpenAI(api_key=OPENAI_API_KEY)
+
+    prompt = message.text.replace(BOT_USERNAME, '').strip()
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4.0-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=4096
+    )
+
+    reply = response['choices'][0]['message']['content'].strip()
+    bot.reply_to(message, reply)
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
