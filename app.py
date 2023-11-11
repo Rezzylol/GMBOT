@@ -728,10 +728,12 @@ def handle_message(message):
         )
     except openai.APIConnectionError as e:
         log_to_control_chat(f"ai APIConnectionError: {e.__cause__}")
-    except openai.RateLimitError as e:
-        log_to_control_chat(f"ai RateLimitError")
     except openai.APIStatusError as e:
         log_to_control_chat(f"ai APIStatusError: {e.response}")
+    except openai.BadRequestError as e:
+        log_to_control_chat(f"ai BadRequestError: {e.response}")
+    except openai.RateLimitError as e:
+        log_to_control_chat(f"ai RateLimitError")
     else:
         reply = completion.choices[0].message.content
         bot.reply_to(message, reply)
