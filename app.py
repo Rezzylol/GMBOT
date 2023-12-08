@@ -769,54 +769,6 @@ def handle_message(message):
 
 @bot.message_handler(func=lambda m: True)
 def handle_all_messages(message):
-    if message.reply_to_message and message.text.startswith('s/'):
-        original_text = message.reply_to_message.text
-        parts = message.text.split('/')
-        pattern, replacement = parts[1], parts[2]
-        new_text = re.sub(re.compile(pattern, re.IGNORECASE), replacement, original_text)
-        bot.reply_to(message.reply_to_message, new_text[:4096])
-
-    if str(message.chat.id) == CHAT_ID_MAIN:
-        message_lower = message.text.lower()
-
-        with open(FILE_MESSAGES, 'a') as file:
-            file.write(re.sub(r'\s+', ' ', message_lower) + ' ')
-
-        message_count = increment_message_count()
-
-        if message_count >= MESSAGES_MAX:
-            with open(FILE_MESSAGES, 'r') as file:
-                all_messages = file.read().split()
-
-            if len(all_messages) >= 10:
-                selected_messages = ' '.join(random.sample(all_messages, 10))
-
-                bot.reply_to(message, selected_messages)
-
-                #with open(FILE_MESSAGES, 'w') as file:
-                #    file.truncate(0)
-                with open(FILE_MESSAGE_COUNT, 'w') as file:
-                    file.write('0')
-
-        if message_count == BESSAGES or message_count == BESSAGES + 1:
-            words = message_lower.split()
-            bessage = []
-            for word in words:
-                if emoji.emoji_count(word[0]) > 0:
-                    bessage.append(word)
-                elif word in DONT_CONVERT:
-                    bessage.append(word)
-                elif word[0] in VOWELS:
-                    bessage.append('b' + word)
-                elif word[0] not in VOWELS and word[1] not in VOWELS:
-                    bessage.append('b' + word[2:])
-                elif any(word.endswith(ending) for ending in CONTRACTION_ENDINGS):
-                    bessage.append(word)
-                else:
-                    bessage.append('b' + word[1:])
-            bessage = ' '.join(bessage)
-            bot.reply_to(message, bessage)
-
         result = random.randint(1, 1000)
         if result == 55:
             log_to_control_chat(f"{message.from_user.username} sabre")
